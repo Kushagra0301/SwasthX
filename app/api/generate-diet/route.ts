@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { buildDietPlan } from "@/lib/tdee";
 import { DietRequestSchema } from "@/lib/schemas";
+import { recommendMealsForPlan } from '../../../lib/mealPlanner';
 
 export async function POST(request: Request) {
   try {
@@ -42,13 +43,15 @@ export async function POST(request: Request) {
       },
     });
 
-    // 3) Persist Plan snapshot
+    const mealSuggestions = await recommendMealsForPlan(plan, payload.mealFrequency ?? 4, payload.dietPreference ?? null, payload.foodRestrictions ?? null);
+
+    // persist plan snapshot including suggestions
     const planRecord = await prisma.plan.create({
       data: {
         userId: payload.userId ?? undefined,
         type: 'DIET',
         title: `Diet plan — ${new Date().toISOString()}`,
-        payload: plan,
+        payload: { plan, mealSuggestions },
       },
     });
 
@@ -56,6 +59,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ok: true,
       plan,
+      mealSuggestions,
       dietResponseId: dietResponse.id,
       planId: planRecord.id,
     });

@@ -1,10 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model User {
+  id               Int               @id @default(autoincrement())
+  email            String?           @unique
+  name             String?
+  hashedPassword   String?
+  createdAt        DateTime          @default(now())
+  dietResponses    DietResponse[]
+  plans            Plan[]
+  workoutResponses WorkoutResponse[]
+}
+
+model DietResponse {
+  id               Int           @id @default(autoincrement())
+  userId           Int?
+  age              Int
+  gender           Gender
+  currentWeightKg  Float
+  heightCm         Int
+  targetWeightKg   Float?
+  activityLevel    ActivityLevel
+  goal             FitnessGoal
+  dietPreference   String
+  mealFrequency    Int           @default(4)
+  foodRestrictions String?
+  createdAt        DateTime      @default(now())
+  user             User?         @relation(fields: [userId], references: [id])
+}
+
+model WorkoutResponse {
+  id           Int          @id @default(autoincrement())
+  userId       Int?
+  gender       Gender
+  fitnessLevel FitnessLevel
+  goal         FitnessGoal
+  location     String
+  workoutTypes Json
+  workoutDays  String
+  createdAt    DateTime     @default(now())
+  user         User?        @relation(fields: [userId], references: [id])
+}
+
+model Meal {
+  id          Int      @id @default(autoincrement())
+  title       String   @unique
+  calories    Int
+  proteinG    Float
+  fatG        Float
+  carbsG      Float
+  tags        Json?
+  ingredients String?
+  recipeUrl   String?
+  createdAt   DateTime @default(now())
+}
+
+model Exercise {
+  id           Int      @id @default(autoincrement())
+  name         String
+  muscleGroup  String
+  equipment    String
+  difficulty   String
+  instructions String?
+  repsTemplate String?
+  createdAt    DateTime @default(now())
+}
+
+model Plan {
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  type        String
+  title       String?
+  payload     Json
+  generatedAt DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id])
 }
 
 enum Gender {
@@ -32,79 +107,4 @@ enum FitnessLevel {
   BEGINNER
   INTERMEDIATE
   ADVANCED
-}
-
-model User {
-  id             Int              @id @default(autoincrement())
-  email          String?          @unique
-  name           String?
-  hashedPassword String?
-  createdAt      DateTime         @default(now())
-  dietResponses  DietResponse[]
-  workoutResponses WorkoutResponse[]
-  plans          Plan[]
-}
-
-model DietResponse {
-  id               Int           @id @default(autoincrement())
-  user             User?         @relation(fields: [userId], references: [id])
-  userId           Int?
-  age              Int
-  gender           Gender
-  currentWeightKg  Float
-  heightCm         Int
-  targetWeightKg   Float?
-  activityLevel    ActivityLevel
-  goal             FitnessGoal
-  dietPreference   String
-  mealFrequency    Int           @default(4)
-  foodRestrictions String?
-  createdAt        DateTime      @default(now())
-}
-
-model WorkoutResponse {
-  id            Int           @id @default(autoincrement())
-  user          User?         @relation(fields: [userId], references: [id])
-  userId        Int?
-  gender        Gender
-  fitnessLevel  FitnessLevel
-  goal          FitnessGoal
-  location      String
-  workoutTypes  Json
-  workoutDays   String
-  createdAt     DateTime      @default(now())
-}
-
-model Meal {
-  id         Int      @id @default(autoincrement())
-  title      String
-  calories   Int
-  proteinG   Float
-  fatG       Float
-  carbsG     Float
-  tags       Json?
-  ingredients String?
-  recipeUrl  String?
-  createdAt  DateTime @default(now())
-}
-
-model Exercise {
-  id           Int      @id @default(autoincrement())
-  name         String
-  muscleGroup  String
-  equipment    String
-  difficulty   String
-  instructions String?
-  repsTemplate String?
-  createdAt    DateTime @default(now())
-}
-
-model Plan {
-  id          Int      @id @default(autoincrement())
-  user        User?    @relation(fields: [userId], references: [id])
-  userId      Int?
-  type        String
-  title       String?
-  payload     Json
-  generatedAt DateTime @default(now())
 }

@@ -17,6 +17,7 @@ interface DietPlanResult {
     proteinG: { min: number; max: number };
     carbsG: { min: number; max: number };
   };
+  mealSuggestions:[];
 }
 
 export default function DietForm() {
@@ -310,6 +311,31 @@ export default function DietForm() {
               {JSON.stringify(result.plan, null, 2)}
             </pre>
           </details>
+          {/* Meal suggestions */}
+          {(result.mealSuggestions ?? result.mealSuggestions)?.length > 0 ? (
+            <div className="mt-6">
+              <h4 className="text-lg font-semibold mb-2">Meal Suggestions</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                {(result.mealSuggestions ?? result.mealSuggestions).map((ms: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white border rounded shadow-sm">
+                    <div className="font-medium mb-1">Meal {idx + 1}</div>
+                    <div className="text-sm text-gray-700 mb-2">
+                      {ms.titles.join(' + ')}
+                    </div>
+                    <div className="text-xs text-gray-600 mb-2">Servings: {ms.scale.join(' + ')}</div>
+                    <div className="flex gap-3 text-sm">
+                      <div><strong>{ms.calories}</strong> kcal</div>
+                      <div><strong>{ms.proteinG}</strong> g P</div>
+                      <div><strong>{ms.fatG}</strong> g F</div>
+                      <div><strong>{ms.carbsG}</strong> g C</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="mt-6 text-sm text-yellow-700">No meal suggestions — trying to find matches...</div>
+          )}
         </div>
       )}
     </div>

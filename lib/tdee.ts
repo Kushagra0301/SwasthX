@@ -129,7 +129,7 @@ export function calcMacroRange(weightKg: number, caloriesRange: { min: number; m
   };
 }
 
-export function buildDietPlan(input: DietInput): MacroRange {
+export function buildDietPlan(input: DietInput) {
   const mealFreq = input.mealFrequency ?? 4;
 
   const bmr = roundToTwo(calcBMR(input));
@@ -138,7 +138,6 @@ export function buildDietPlan(input: DietInput): MacroRange {
 
   const macros = calcMacroRange(input.weightKg, calRange);
 
-  // per-meal
   const perMeal = {
     calories: {
       min: roundToTwo(calRange.min / mealFreq),
@@ -166,3 +165,4 @@ export function buildDietPlan(input: DietInput): MacroRange {
     perMeal,
   };
 }
+
