@@ -11,8 +11,8 @@
     "seed": "node prisma/seed.mjs"
   },
   "prisma": {
-  "seed": "node prisma/seed.mjs"
-    },
+    "seed": "node prisma/seed.mjs"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.19.0",
@@ -33,6 +33,7 @@
     "prisma": "^6.19.0",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

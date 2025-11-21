@@ -15,3 +15,15 @@ export const DietRequestSchema = z.object({
 });
 
 export type DietRequest = z.infer<typeof DietRequestSchema>;
+
+export const WorkoutRequestSchema  = z.object({
+    gender: z.enum(['MALE','FEMALE','OTHER']),
+    fitnessLevel: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
+    goal: z.enum(['WEIGHT_LOSS', 'MUSCLE_GAIN', 'MAINTENANCE', 'ENDURANCE']),
+    location: z.enum(['HOME', 'GYM']),
+    workoutTypes: z.array(z.enum(['STRENGTH', 'CARDIO', 'HIIT', 'BODYWEIGHT'])).nonempty(),
+    daysPerWeek: z.number().int().min(1).max(7),
+    userId: z.number().int().optional()
+});
+
+export type WorkoutRequest = z.infer<typeof WorkoutRequestSchema >;

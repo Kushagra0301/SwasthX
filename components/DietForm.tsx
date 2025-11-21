@@ -320,9 +320,11 @@ export default function DietForm() {
                   <div key={idx} className="p-4 bg-white border rounded shadow-sm">
                     <div className="font-medium mb-1">Meal {idx + 1}</div>
                     <div className="text-sm text-gray-700 mb-2">
-                      {ms.titles.join(' + ')}
+                      {Array.isArray(ms.titles) ? ms.titles.join(' + ') : 'Untitled meal'}
                     </div>
-                    <div className="text-xs text-gray-600 mb-2">Servings: {ms.scale.join(' + ')}</div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      Servings: {Array.isArray(ms.scale) ? ms.scale.join(' + ') : 'N/A'}
+                    </div>
                     <div className="flex gap-3 text-sm">
                       <div><strong>{ms.calories}</strong> kcal</div>
                       <div><strong>{ms.proteinG}</strong> g P</div>
