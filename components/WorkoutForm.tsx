@@ -321,14 +321,26 @@ export default function WorkoutForm() {
             {result.plan.days.map((day, index) => (
               <div
                 key={index}
-                className="bg-zinc-950/60 border border-zinc-800 rounded-lg p-4"
+                className="rounded-lg border border-zinc-800 bg-zinc-900/80 p-4"
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                   <div>
-                    <p className="text-sm text-zinc-500">{day.dayLabel}</p>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wide">
+                      {day.dayLabel}
+                    </p>
                     <p className="text-lg font-semibold text-zinc-100">
                       {day.focus}
                     </p>
+                  </div>
+
+                  {/* Small status chips */}
+                  <div className="flex flex-col items-end gap-1 text-[11px] text-zinc-400">
+                    <span className="px-2 py-0.5 rounded-full bg-zinc-800 border border-zinc-700">
+                      {result.plan.location}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-zinc-800 border border-zinc-700">
+                      {result.plan.fitnessLevel}
+                    </span>
                   </div>
                 </div>
 

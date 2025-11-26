@@ -1,21 +1,24 @@
-// prisma/seed.js
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
+import bcrypt from 'bcryptjs';
+
 
 async function main() {
   console.log('Seeding started...');
 
-  // sample user
+  const passwordPlain = 'demo1234'; 
+  const hashedPassword = await bcrypt.hash(passwordPlain, 10);
+
   await prisma.user.upsert({
     where: { email: 'demo@swasthx.test' },
     update: {},
     create: {
       email: 'demo@swasthx.test',
       name: 'Demo User',
+      hashedPassword,
     },
   });
 
-  // sample meals
   const meals = [
     {
       title: 'Oats with Milk & Banana',
@@ -23,7 +26,7 @@ async function main() {
       proteinG: 12,
       fatG: 8,
       carbsG: 70,
-      tags: JSON.stringify(['veg']),
+      tags: ['veg'],
     },
     {
       title: 'Grilled Chicken Salad',
@@ -31,7 +34,7 @@ async function main() {
       proteinG: 40,
       fatG: 18,
       carbsG: 20,
-      tags: JSON.stringify(['non-veg','gluten-free']),
+      tags: ['non-veg', 'gluten-free'],
     },
     {
       title: 'Paneer Bhurji with Roti',
@@ -39,7 +42,7 @@ async function main() {
       proteinG: 30,
       fatG: 25,
       carbsG: 40,
-      tags: JSON.stringify(['veg']),
+      tags: ['veg'],
     }
   ];
 
@@ -48,21 +51,6 @@ async function main() {
       where: { title: m.title },
       update: {},
       create: m,
-    });
-  }
-
-  // sample exercises
-  const exercises = [
-    { name: 'Squat', muscleGroup: 'Legs', equipment: 'Barbell / Bodyweight', difficulty: 'INTERMEDIATE', instructions: 'Keep chest up, drive through heels.', repsTemplate: '3 sets x 8-12 reps' },
-    { name: 'Push-up', muscleGroup: 'Chest', equipment: 'Bodyweight', difficulty: 'BEGINNER', instructions: 'Keep core tight, full ROM.', repsTemplate: '3 sets x 10-15 reps' },
-    { name: 'Plank', muscleGroup: 'Core', equipment: 'Bodyweight', difficulty: 'BEGINNER', instructions: 'Hold neutral spine.', repsTemplate: '3 x 30-60s' }
-  ];
-
-  for (const ex of exercises) {
-    await prisma.exercise.upsert({
-      where: { name: ex.name },
-      update: {},
-      create: ex,
     });
   }
 

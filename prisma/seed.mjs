@@ -1,18 +1,30 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
+import bcrypt from 'bcryptjs';
+
 
 async function main() {
   console.log('Seeding started...');
 
+  const passwordPlain = 'demo1234'; 
+  const hashedPassword = await bcrypt.hash(passwordPlain, 10);
+
   await prisma.user.upsert({
     where: { email: 'demo@swasthx.test' },
-    update: {},
+    update: {
+      // ✅ when user already exists, also update these fields
+      name: 'Demo User',
+      hashedPassword,          // <— this is the key line
+      emailVerified: null,     // optional, just to be explicit
+    },
     create: {
       email: 'demo@swasthx.test',
       name: 'Demo User',
+      hashedPassword,
+      emailVerified: null,     // optional
     },
   });
-
+  
   const meals = [
     {
       title: 'Oats with Milk & Banana',

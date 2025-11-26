@@ -1,23 +1,38 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { DietRequestSchema } from '../lib/schemas';
-import type { z } from 'zod';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { DietRequestSchema } from "../lib/schemas";
+import type { z } from "zod";
 
 type DietInput = z.input<typeof DietRequestSchema>;
 
+// This describes one suggested meal returned by the API.
+type MealSuggestion = {
+  mealId: number;
+  title: string;
+  scale: number; // serving multiplier (e.g., 1.2x of base portion)
+  calories: number;
+  proteinG: number;
+  fatG: number;
+  carbsG: number;
+  tags?: string[]; // e.g. ["veg", "high-protein"]
+  recipeUrl?: string | null;
+};
+
+// This describes the full response returned by /api/generate-diet
 interface DietPlanResult {
-  dietResponseId: string;
-  planId: string;
+  dietResponseId: number; // backend returns numbers from Prisma
+  planId: number;
   plan: {
     totalCalories: { min: number; max: number };
     perMeal: { calories: { min: number; max: number } };
     proteinG: { min: number; max: number };
     carbsG: { min: number; max: number };
+    fatG?: { min: number; max: number }; // optional if you want to expand later
   };
-  mealSuggestions:[];
+  mealSuggestions: MealSuggestion[];
 }
 
 export default function DietForm() {
@@ -33,14 +48,14 @@ export default function DietForm() {
     resolver: zodResolver(DietRequestSchema),
     defaultValues: {
       age: 25,
-      gender: 'MALE',
+      gender: "MALE",
       weightKg: 70,
       heightCm: 175,
-      activityLevel: 'MODERATE',
-      goal: 'WEIGHT_LOSS',
+      activityLevel: "MODERATE",
+      goal: "WEIGHT_LOSS",
       mealFrequency: 4,
-      dietPreference: 'Non-veg',
-      foodRestrictions: '',
+      dietPreference: "Non-veg",
+      foodRestrictions: "",
     },
   });
 
@@ -50,20 +65,20 @@ export default function DietForm() {
     setResult(null);
 
     try {
-      const res = await fetch('/api/generate-diet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/generate-diet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
       const json = await res.json();
       if (!res.ok) {
-        setError(json?.error || 'Server error');
+        setError(json?.error || "Server error");
       } else {
         setResult(json);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Network error');
+      setError(err instanceof Error ? err.message : "Network error");
     } finally {
       setLoading(false);
     }
@@ -73,7 +88,9 @@ export default function DietForm() {
     <div className="max-w-4xl mx-auto">
       {/* Form Section */}
       <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6 mb-6">
-        <h2 className="text-xl font-semibold text-zinc-100 mb-6">Personal Information</h2>
+        <h2 className="text-xl font-semibold text-zinc-100 mb-6">
+          Personal Information
+        </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -84,12 +101,14 @@ export default function DietForm() {
               </label>
               <input
                 type="number"
-                {...register('age', { valueAsNumber: true })}
+                {...register("age", { valueAsNumber: true })}
                 className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 placeholder="25"
               />
               {errors.age?.message && (
-                <p className="mt-1.5 text-sm text-red-400">{errors.age.message}</p>
+                <p className="mt-1.5 text-sm text-red-400">
+                  {errors.age.message}
+                </p>
               )}
             </div>
 
@@ -99,7 +118,7 @@ export default function DietForm() {
                 Gender
               </label>
               <select
-                {...register('gender')}
+                {...register("gender")}
                 className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               >
                 <option value="MALE">Male</option>
@@ -107,7 +126,9 @@ export default function DietForm() {
                 <option value="OTHER">Other</option>
               </select>
               {errors.gender?.message && (
-                <p className="mt-1.5 text-sm text-red-400">{errors.gender.message}</p>
+                <p className="mt-1.5 text-sm text-red-400">
+                  {errors.gender.message}
+                </p>
               )}
             </div>
 
@@ -119,12 +140,14 @@ export default function DietForm() {
               <input
                 type="number"
                 step="0.1"
-                {...register('weightKg', { valueAsNumber: true })}
+                {...register("weightKg", { valueAsNumber: true })}
                 className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 placeholder="70"
               />
               {errors.weightKg?.message && (
-                <p className="mt-1.5 text-sm text-red-400">{errors.weightKg.message}</p>
+                <p className="mt-1.5 text-sm text-red-400">
+                  {errors.weightKg.message}
+                </p>
               )}
             </div>
 
@@ -135,12 +158,14 @@ export default function DietForm() {
               </label>
               <input
                 type="number"
-                {...register('heightCm', { valueAsNumber: true })}
+                {...register("heightCm", { valueAsNumber: true })}
                 className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 placeholder="175"
               />
               {errors.heightCm?.message && (
-                <p className="mt-1.5 text-sm text-red-400">{errors.heightCm.message}</p>
+                <p className="mt-1.5 text-sm text-red-400">
+                  {errors.heightCm.message}
+                </p>
               )}
             </div>
 
@@ -150,7 +175,7 @@ export default function DietForm() {
                 Activity Level
               </label>
               <select
-                {...register('activityLevel')}
+                {...register("activityLevel")}
                 className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               >
                 <option value="SEDENTARY">Sedentary</option>
@@ -160,7 +185,9 @@ export default function DietForm() {
                 <option value="SUPER_ACTIVE">Super Active</option>
               </select>
               {errors.activityLevel?.message && (
-                <p className="mt-1.5 text-sm text-red-400">{errors.activityLevel.message}</p>
+                <p className="mt-1.5 text-sm text-red-400">
+                  {errors.activityLevel.message}
+                </p>
               )}
             </div>
 
@@ -170,7 +197,7 @@ export default function DietForm() {
                 Primary Goal
               </label>
               <select
-                {...register('goal')}
+                {...register("goal")}
                 className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               >
                 <option value="WEIGHT_LOSS">Weight Loss</option>
@@ -179,7 +206,9 @@ export default function DietForm() {
                 <option value="ENDURANCE">Endurance</option>
               </select>
               {errors.goal?.message && (
-                <p className="mt-1.5 text-sm text-red-400">{errors.goal.message}</p>
+                <p className="mt-1.5 text-sm text-red-400">
+                  {errors.goal.message}
+                </p>
               )}
             </div>
 
@@ -190,12 +219,14 @@ export default function DietForm() {
               </label>
               <input
                 type="number"
-                {...register('mealFrequency', { valueAsNumber: true })}
+                {...register("mealFrequency", { valueAsNumber: true })}
                 className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 placeholder="4"
               />
               {errors.mealFrequency?.message && (
-                <p className="mt-1.5 text-sm text-red-400">{errors.mealFrequency.message}</p>
+                <p className="mt-1.5 text-sm text-red-400">
+                  {errors.mealFrequency.message}
+                </p>
               )}
             </div>
 
@@ -205,7 +236,7 @@ export default function DietForm() {
                 Diet Preference
               </label>
               <input
-                {...register('dietPreference')}
+                {...register("dietPreference")}
                 className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 placeholder="e.g., Vegetarian, Vegan, Non-veg"
               />
@@ -218,7 +249,7 @@ export default function DietForm() {
               Food Restrictions
             </label>
             <input
-              {...register('foodRestrictions')}
+              {...register("foodRestrictions")}
               className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               placeholder="e.g., Gluten-free, Dairy-free, Nut allergies"
             />
@@ -231,7 +262,7 @@ export default function DietForm() {
               disabled={loading}
               className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
             >
-              {loading ? 'Generating...' : 'Generate Diet Plan'}
+              {loading ? "Generating..." : "Generate Diet Plan"}
             </button>
             <button
               type="button"
@@ -260,7 +291,9 @@ export default function DietForm() {
       {result && (
         <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold text-zinc-100">Your Diet Plan</h3>
+            <h3 className="text-xl font-semibold text-zinc-100">
+              Your Diet Plan
+            </h3>
             <div className="text-sm text-zinc-500">
               Plan ID: <span className="text-zinc-400">{result.planId}</span>
             </div>
@@ -279,7 +312,8 @@ export default function DietForm() {
             <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
               <p className="text-sm text-zinc-400 mb-1">Per Meal</p>
               <p className="text-2xl font-semibold text-zinc-100">
-                {result.plan.perMeal.calories.min}–{result.plan.perMeal.calories.max}
+                {result.plan.perMeal.calories.min}–
+                {result.plan.perMeal.calories.max}
               </p>
               <p className="text-xs text-zinc-500 mt-1">kcal</p>
             </div>
@@ -304,7 +338,9 @@ export default function DietForm() {
           {/* Full Plan Details */}
           <details className="group">
             <summary className="cursor-pointer text-sm font-medium text-zinc-300 hover:text-zinc-100 transition list-none flex items-center gap-2">
-              <span className="transform group-open:rotate-90 transition-transform">▶</span>
+              <span className="transform group-open:rotate-90 transition-transform">
+                ▶
+              </span>
               View Complete Plan Details
             </summary>
             <pre className="mt-4 bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto text-xs text-zinc-300 max-h-96">
@@ -312,31 +348,95 @@ export default function DietForm() {
             </pre>
           </details>
           {/* Meal suggestions */}
-          {(result.mealSuggestions ?? result.mealSuggestions)?.length > 0 ? (
-            <div className="mt-6">
-              <h4 className="text-lg font-semibold mb-2">Meal Suggestions</h4>
-              <div className="grid md:grid-cols-2 gap-4">
-                {(result.mealSuggestions ?? result.mealSuggestions).map((ms: any, idx: number) => (
-                  <div key={idx} className="p-4 bg-white border rounded shadow-sm">
-                    <div className="font-medium mb-1">Meal {idx + 1}</div>
-                    <div className="text-sm text-gray-700 mb-2">
-                      {Array.isArray(ms.titles) ? ms.titles.join(' + ') : 'Untitled meal'}
+          {result.mealSuggestions && result.mealSuggestions.length > 0 ? (
+            <div className="mt-8">
+              <h4 className="text-lg font-semibold text-zinc-100 mb-3">
+                Meal Suggestions (per meal)
+              </h4>
+              <p className="text-xs text-zinc-500 mb-4">
+                These meals are scaled to roughly match your per-meal calorie
+                and macro targets.
+              </p>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {result.mealSuggestions.map((ms, idx) => (
+                  <div
+                    key={ms.mealId ?? idx}
+                    className="rounded-lg border border-zinc-800 bg-zinc-900/80 p-4"
+                  >
+                    {/* Header: Meal title + tag chips */}
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div>
+                        <p className="text-xs text-zinc-500">Meal {idx + 1}</p>
+                        <p className="text-sm font-semibold text-zinc-100">
+                          {ms.title}
+                        </p>
+                      </div>
+
+                      {ms.tags && ms.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 justify-end">
+                          {ms.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="px-2 py-0.5 rounded-full bg-zinc-800 text-[10px] uppercase tracking-wide text-zinc-400"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="text-xs text-gray-600 mb-2">
-                      Servings: {Array.isArray(ms.scale) ? ms.scale.join(' + ') : 'N/A'}
+
+                    {/* Macros row */}
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-300 mb-2">
+                      <div>
+                        <span className="text-zinc-500">Calories:</span>{" "}
+                        <span className="font-semibold">{ms.calories}</span>{" "}
+                        kcal
+                      </div>
+                      <div>
+                        <span className="text-zinc-500">Protein:</span>{" "}
+                        <span className="font-semibold">{ms.proteinG}</span> g
+                      </div>
+                      <div>
+                        <span className="text-zinc-500">Carbs:</span>{" "}
+                        <span className="font-semibold">{ms.carbsG}</span> g
+                      </div>
+                      <div>
+                        <span className="text-zinc-500">Fat:</span>{" "}
+                        <span className="font-semibold">{ms.fatG}</span> g
+                      </div>
                     </div>
-                    <div className="flex gap-3 text-sm">
-                      <div><strong>{ms.calories}</strong> kcal</div>
-                      <div><strong>{ms.proteinG}</strong> g P</div>
-                      <div><strong>{ms.fatG}</strong> g F</div>
-                      <div><strong>{ms.carbsG}</strong> g C</div>
-                    </div>
+
+                    {/* Portion / scale info */}
+                    <p className="text-[11px] text-zinc-400 mb-2">
+                      Portion multiplier:{" "}
+                      <span className="font-semibold text-zinc-200">
+                        {ms.scale.toFixed(2)}×
+                      </span>{" "}
+                      of base recipe.
+                    </p>
+
+                    {/* Optional recipe link */}
+                    {ms.recipeUrl && (
+                      <a
+                        href={ms.recipeUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center text-[11px] text-blue-400 hover:text-blue-300 underline"
+                      >
+                        View full recipe
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="mt-6 text-sm text-yellow-700">No meal suggestions — trying to find matches...</div>
+            <div className="mt-6 text-sm text-yellow-400">
+              No meal suggestions found for your current filters. Try relaxing
+              diet preference or restrictions.
+            </div>
           )}
         </div>
       )}
