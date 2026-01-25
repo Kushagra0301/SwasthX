@@ -1,168 +1,120 @@
 // lib/tdee.ts
-export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
+
+export type Gender = "MALE" | "FEMALE" | "OTHER";
 export type ActivityLevel =
-  | 'SEDENTARY'
-  | 'LIGHT'
-  | 'MODERATE'
-  | 'VERY_ACTIVE'
-  | 'SUPER_ACTIVE';
-export type FitnessGoal = 'WEIGHT_LOSS' | 'MUSCLE_GAIN' | 'MAINTENANCE' | 'ENDURANCE';
+  | "SEDENTARY"
+  | "LIGHT"
+  | "MODERATE"
+  | "VERY_ACTIVE"
+  | "SUPER_ACTIVE";
+
+export type FitnessGoal =
+  | "WEIGHT_LOSS"
+  | "MUSCLE_GAIN"
+  | "MAINTENANCE"
+  | "ENDURANCE";
 
 export interface DietInput {
-  age: number; // years
+  age: number;
   gender: Gender;
   weightKg: number;
   heightCm: number;
   activityLevel: ActivityLevel;
   goal: FitnessGoal;
-  mealFrequency?: number; // default 4
+  mealFrequency?: number;
 }
 
-export interface MacroRange {
-  proteinG: { min: number; max: number };
-  fatG: { min: number; max: number };
-  carbsG: { min: number; max: number };
-  totalCalories: { min: number; max: number };
-  perMeal: {
-    calories: { min: number; max: number };
-    proteinG: { min: number; max: number };
-    fatG: { min: number; max: number };
-    carbsG: { min: number; max: number };
-  };
-}
-
-export function calcBMR({ age, gender, weightKg, heightCm }: DietInput): number {
-  // Mifflin-St Jeor
-  // Male: 10*weight + 6.25*height - 5*age + 5
-  // Female: 10*weight + 6.25*height - 5*age -161
-  const base = 10 * weightKg + 6.25 * heightCm - 5 * age;
-  if (gender === 'MALE') return base + 5;
-  if (gender === 'FEMALE') return base - 161;
-  // For OTHER, use average of male/female constants ( (+5) + (-161) )/2 = -78
-  return base - 78;
-}
-
-export function activityFactor(level: ActivityLevel): number {
-  switch (level) {
-    case 'SEDENTARY':
-      return 1.2;
-    case 'LIGHT':
-      return 1.375;
-    case 'MODERATE':
-      return 1.55;
-    case 'VERY_ACTIVE':
-      return 1.725;
-    case 'SUPER_ACTIVE':
-      return 1.9;
-    default:
-      return 1.55;
-  }
-}
-
-export function calcTDEE(bmr: number, level: ActivityLevel): number {
-  return bmr * activityFactor(level);
-}
-
-export function adjustCaloriesForGoal(tdee: number, goal: FitnessGoal): { min: number; max: number } {
-  switch (goal) {
-    case 'WEIGHT_LOSS':
-      // TDEE - 300 .. TDEE - 500
-      return { min: roundToTwo(tdee - 500), max: roundToTwo(tdee - 300) };
-    case 'MUSCLE_GAIN':
-      // TDEE + 250 .. TDEE + 500
-      return { min: roundToTwo(tdee + 250), max: roundToTwo(tdee + 500) };
-    case 'MAINTENANCE':
-    case 'ENDURANCE':
-    default:
-      return { min: roundToTwo(tdee), max: roundToTwo(tdee) };
-  }
-}
-
-function roundToTwo(n: number) {
-  return Math.round(n * 100) / 100;
-}
-
-/**
- * Calculate macro ranges (protein, fat, carbs) based on weight and calorie range.
- * Protein: 1.6 - 2.2 g/kg
- * Fat: 0.8 - 1 g/kg
- * Carbs: remaining calories
- */
-export function calcMacroRange(weightKg: number, caloriesRange: { min: number; max: number }) {
-  const proteinMinG = roundToTwo(1.6 * weightKg);
-  const proteinMaxG = roundToTwo(2.2 * weightKg);
-
-  const fatMinG = roundToTwo(0.8 * weightKg);
-  const fatMaxG = roundToTwo(1.0 * weightKg);
-
-  // kCal per gram
-  const kcalPerProtein = 4;
-  const kcalPerFat = 9;
-  const kcalPerCarb = 4;
-
-  // For min-calorie scenario, assume higher protein & fat (conservative) OR compute both extremes.
-  // We'll compute carbs as remaining calories after protein and fat.
-  const carbsMinScenario = (() => {
-    const proteinKcal = proteinMinG * kcalPerProtein; // using min protein → leaves more calories for carbs
-    const fatKcal = fatMinG * kcalPerFat;
-    const carbsKcal = caloriesRange.min - (proteinKcal + fatKcal);
-    const carbsG = Math.max(0, roundToTwo(carbsKcal / kcalPerCarb));
-    return carbsG;
-  })();
-
-  const carbsMaxScenario = (() => {
-    const proteinKcal = proteinMaxG * kcalPerProtein; // higher protein consumes more calories → fewer carbs
-    const fatKcal = fatMaxG * kcalPerFat;
-    const carbsKcal = caloriesRange.max - (proteinKcal + fatKcal);
-    const carbsG = Math.max(0, roundToTwo(carbsKcal / kcalPerCarb));
-    return carbsG;
-  })();
-
-  // We'll return ranges for protein and fat, and carbs as min..max computed across calorie extremes.
-  const carbsMinG = Math.min(carbsMinScenario, carbsMaxScenario);
-  const carbsMaxG = Math.max(carbsMinScenario, carbsMaxScenario);
-
-  return {
-    proteinG: { min: proteinMinG, max: proteinMaxG },
-    fatG: { min: fatMinG, max: fatMaxG },
-    carbsG: { min: carbsMinG, max: carbsMaxG },
-  };
-}
+const round = (n: number) => Math.round(n);
 
 export function buildDietPlan(input: DietInput) {
-  const mealFreq = input.mealFrequency ?? 4;
+  const meals = input.mealFrequency ?? 4;
 
-  const bmr = roundToTwo(calcBMR(input));
-  const tdee = roundToTwo(calcTDEE(bmr, input.activityLevel));
-  const calRange = adjustCaloriesForGoal(tdee, input.goal);
+  // BMR
+  const base = 10 * input.weightKg + 6.25 * input.heightCm - 5 * input.age;
 
-  const macros = calcMacroRange(input.weightKg, calRange);
+  const bmr =
+    input.gender === "MALE"
+      ? base + 5
+      : input.gender === "FEMALE"
+      ? base - 161
+      : base - 78;
 
-  const perMeal = {
-    calories: {
-      min: roundToTwo(calRange.min / mealFreq),
-      max: roundToTwo(calRange.max / mealFreq),
-    },
-    proteinG: {
-      min: roundToTwo(macros.proteinG.min / mealFreq),
-      max: roundToTwo(macros.proteinG.max / mealFreq),
-    },
-    fatG: {
-      min: roundToTwo(macros.fatG.min / mealFreq),
-      max: roundToTwo(macros.fatG.max / mealFreq),
-    },
-    carbsG: {
-      min: roundToTwo(macros.carbsG.min / mealFreq),
-      max: roundToTwo(macros.carbsG.max / mealFreq),
-    },
+  // Activity
+  const factor: Record<ActivityLevel, number> = {
+    SEDENTARY: 1.2,
+    LIGHT: 1.375,
+    MODERATE: 1.55,
+    VERY_ACTIVE: 1.725,
+    SUPER_ACTIVE: 1.9,
   };
+
+  const tdee = bmr * factor[input.activityLevel];
+
+  // Goal adjustment
+  let minCalories = tdee;
+  let maxCalories = tdee;
+
+  if (input.goal === "WEIGHT_LOSS") {
+    minCalories = tdee - 500;
+    maxCalories = tdee - 300;
+  }
+
+  if (input.goal === "MUSCLE_GAIN") {
+    minCalories = tdee + 250;
+    maxCalories = tdee + 500;
+  }
+
+  // Protein & fat (weight-based)
+  const proteinMin = round(1.6 * input.weightKg);
+  const proteinMax = round(2.2 * input.weightKg);
+
+  const fatMin = round(0.8 * input.weightKg);
+  const fatMax = round(1.0 * input.weightKg);
+
+  // Calories already allocated
+  const proteinCaloriesMin = proteinMin * 4;
+  const proteinCaloriesMax = proteinMax * 4;
+
+  const fatCaloriesMin = fatMin * 9;
+  const fatCaloriesMax = fatMax * 9;
+
+  // Remaining calories → carbs (with safety floor)
+  const carbsMin = Math.max(
+    50,
+    round((minCalories - proteinCaloriesMax - fatCaloriesMax) / 4)
+  );
+
+  const carbsMax = Math.max(
+    carbsMin,
+    round((maxCalories - proteinCaloriesMin - fatCaloriesMin) / 4)
+  );
 
   return {
-    proteinG: macros.proteinG,
-    fatG: macros.fatG,
-    carbsG: { min: macros.carbsG.min, max: macros.carbsG.max },
-    totalCalories: { min: calRange.min, max: calRange.max },
-    perMeal,
+    totalCalories: {
+      min: round(minCalories),
+      max: round(maxCalories),
+    },
+
+    proteinG: {
+      min: proteinMin,
+      max: proteinMax,
+    },
+
+    fatG: {
+      min: fatMin,
+      max: fatMax,
+    },
+
+    carbsG: {
+      min: carbsMin,
+      max: carbsMax,
+    },
+
+    perMeal: {
+      calories: {
+        min: round(minCalories / meals),
+        max: round(maxCalories / meals),
+      },
+    },
   };
 }
-

@@ -7,10 +7,7 @@ export const DietRequestSchema = z.object({
     heightCm: z.number().int().positive(),
     activityLevel: z.enum(['SEDENTARY','LIGHT','MODERATE','VERY_ACTIVE','SUPER_ACTIVE']),
     goal: z.enum(['WEIGHT_LOSS','MUSCLE_GAIN','MAINTENANCE','ENDURANCE']),
-    mealFrequency: z.number().int().min(1).max(10).optional().default(4),
-    dietPreference: z.string().optional(),
-    foodRestrictions: z.string().nullable().optional(),
-    // optionally allow userId if logged-in (we'll accept null for now)
+    dietPreference: z.enum(['VEG', 'NON_VEG']),
     userId: z.number().nullable().optional(),
 });
 

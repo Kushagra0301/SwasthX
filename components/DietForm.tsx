@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DietRequestSchema } from "../lib/schemas";
 import type { z } from "zod";
+import { downloadDietPDF, downloadPDF } from "@/lib/pdf";
 
 type DietInput = z.input<typeof DietRequestSchema>;
 
@@ -20,25 +21,48 @@ type MealSuggestion = {
   tags?: string[]; // e.g. ["veg", "high-protein"]
   recipeUrl?: string | null;
 };
+type MealBlock = {
+  id: number;
+  title: string;
+  mealType: "BREAKFAST" | "LUNCH" | "DINNER" | "SNACK";
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  ingredients: string;
+  dietType: "VEG" | "NON_VEG";
+  goal: "WEIGHT_LOSS" | "MAINTENANCE" | "MUSCLE_GAIN";
+};
 
 // This describes the full response returned by /api/generate-diet
 interface DietPlanResult {
-  dietResponseId: number; // backend returns numbers from Prisma
+  dietResponseId: number;
   planId: number;
   plan: {
     totalCalories: { min: number; max: number };
     perMeal: { calories: { min: number; max: number } };
     proteinG: { min: number; max: number };
     carbsG: { min: number; max: number };
-    fatG?: { min: number; max: number }; // optional if you want to expand later
+    fatG: { min: number; max: number };
   };
-  mealSuggestions: MealSuggestion[];
+  meals: {
+    BREAKFAST: MealBlock | null;
+    LUNCH: MealBlock | null;
+    DINNER: MealBlock | null;
+    SNACK: MealBlock | null;
+  };
 }
 
 export default function DietForm() {
   const [result, setResult] = useState<DietPlanResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasWorkoutPlan, setHasWorkoutPlan] = useState(false);
+
+  useEffect(() => {
+    const workoutPlan = localStorage.getItem('workoutPlan');
+    setHasWorkoutPlan(!!workoutPlan);
+  }, []);
 
   const {
     register,
@@ -53,9 +77,7 @@ export default function DietForm() {
       heightCm: 175,
       activityLevel: "MODERATE",
       goal: "WEIGHT_LOSS",
-      mealFrequency: 4,
-      dietPreference: "Non-veg",
-      foodRestrictions: "",
+      dietPreference: "NON_VEG"
     },
   });
 
@@ -76,6 +98,14 @@ export default function DietForm() {
         setError(json?.error || "Server error");
       } else {
         setResult(json);
+        // Save diet plan to localStorage for PDF generation
+        localStorage.setItem('dietPlan', JSON.stringify({
+          ...json.plan,
+          meals: json.meals
+        }));
+        // Check if workout plan exists
+        const workoutPlan = localStorage.getItem('workoutPlan');
+        setHasWorkoutPlan(!!workoutPlan);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
@@ -212,47 +242,19 @@ export default function DietForm() {
               )}
             </div>
 
-            {/* Meal Frequency */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Meals Per Day
-              </label>
-              <input
-                type="number"
-                {...register("mealFrequency", { valueAsNumber: true })}
-                className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                placeholder="4"
-              />
-              {errors.mealFrequency?.message && (
-                <p className="mt-1.5 text-sm text-red-400">
-                  {errors.mealFrequency.message}
-                </p>
-              )}
-            </div>
-
             {/* Diet Preference */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-2">
                 Diet Preference
               </label>
-              <input
-                {...register("dietPreference")}
-                className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                placeholder="e.g., Vegetarian, Vegan, Non-veg"
-              />
+                <select
+                  {...register("dietPreference")}
+                  className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="VEG">Vegetarian</option>
+                  <option value="NON_VEG">Non-Vegetarian</option>
+                </select>
             </div>
-          </div>
-
-          {/* Food Restrictions */}
-          <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-2">
-              Food Restrictions
-            </label>
-            <input
-              {...register("foodRestrictions")}
-              className="w-full px-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              placeholder="e.g., Gluten-free, Dairy-free, Nut allergies"
-            />
           </div>
 
           {/* Buttons */}
@@ -294,8 +296,18 @@ export default function DietForm() {
             <h3 className="text-xl font-semibold text-zinc-100">
               Your Diet Plan
             </h3>
-            <div className="text-sm text-zinc-500">
-              Plan ID: <span className="text-zinc-400">{result.planId}</span>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => downloadDietPDF()}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200 flex items-center gap-2"
+              >
+                <span>Download PDF</span>
+                {hasWorkoutPlan && (
+                  <span className="text-xs bg-green-700 px-2 py-1 rounded">
+                    + Workout
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 
@@ -336,108 +348,58 @@ export default function DietForm() {
           </div>
 
           {/* Full Plan Details */}
-          <details className="group">
-            <summary className="cursor-pointer text-sm font-medium text-zinc-300 hover:text-zinc-100 transition list-none flex items-center gap-2">
-              <span className="transform group-open:rotate-90 transition-transform">
-                ▶
-              </span>
-              View Complete Plan Details
-            </summary>
-            <pre className="mt-4 bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto text-xs text-zinc-300 max-h-96">
-              {JSON.stringify(result.plan, null, 2)}
-            </pre>
-          </details>
           {/* Meal suggestions */}
-          {result.mealSuggestions && result.mealSuggestions.length > 0 ? (
-            <div className="mt-8">
-              <h4 className="text-lg font-semibold text-zinc-100 mb-3">
-                Meal Suggestions (per meal)
-              </h4>
-              <p className="text-xs text-zinc-500 mb-4">
-                These meals are scaled to roughly match your per-meal calorie
-                and macro targets.
-              </p>
+          <div className="mt-8">
+            <h4 className="text-lg font-semibold text-zinc-100 mb-4">
+              Your Meals for the Day
+            </h4>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                {result.mealSuggestions.map((ms, idx) => (
-                  <div
-                    key={ms.mealId ?? idx}
-                    className="rounded-lg border border-zinc-800 bg-zinc-900/80 p-4"
-                  >
-                    {/* Header: Meal title + tag chips */}
-                    <div className="flex items-start justify-between gap-2 mb-3">
-                      <div>
-                        <p className="text-xs text-zinc-500">Meal {idx + 1}</p>
-                        <p className="text-sm font-semibold text-zinc-100">
-                          {ms.title}
-                        </p>
-                      </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {Object.entries(result.meals).map(([slot, meal]) => (
+                <div
+                  key={slot}
+                  className="rounded-lg border border-zinc-800 bg-zinc-900/80 p-4"
+                >
+                  <p className="text-xs text-zinc-500 mb-1">{slot}</p>
 
-                      {ms.tags && ms.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 justify-end">
-                          {ms.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="px-2 py-0.5 rounded-full bg-zinc-800 text-[10px] uppercase tracking-wide text-zinc-400"
-                            >
-                              {tag}
-                            </span>
-                          ))}
+                  {meal ? (
+                    <>
+                      <p className="text-sm font-semibold text-zinc-100 mb-2">
+                        {meal.title}
+                      </p>
+
+                      <div className="flex flex-wrap gap-3 text-xs text-zinc-300">
+                        <div>
+                          <span className="text-zinc-500">Calories:</span>{" "}
+                          <strong>{meal.calories}</strong> kcal
                         </div>
-                      )}
-                    </div>
+                        <div>
+                          <span className="text-zinc-500">Protein:</span>{" "}
+                          <strong>{meal.proteinG}</strong> g
+                        </div>
+                        <div>
+                          <span className="text-zinc-500">Carbs:</span>{" "}
+                          <strong>{meal.carbsG}</strong> g
+                        </div>
+                        <div>
+                          <span className="text-zinc-500">Fat:</span>{" "}
+                          <strong>{meal.fatG}</strong> g
+                        </div>
+                      </div>
 
-                    {/* Macros row */}
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-300 mb-2">
-                      <div>
-                        <span className="text-zinc-500">Calories:</span>{" "}
-                        <span className="font-semibold">{ms.calories}</span>{" "}
-                        kcal
-                      </div>
-                      <div>
-                        <span className="text-zinc-500">Protein:</span>{" "}
-                        <span className="font-semibold">{ms.proteinG}</span> g
-                      </div>
-                      <div>
-                        <span className="text-zinc-500">Carbs:</span>{" "}
-                        <span className="font-semibold">{ms.carbsG}</span> g
-                      </div>
-                      <div>
-                        <span className="text-zinc-500">Fat:</span>{" "}
-                        <span className="font-semibold">{ms.fatG}</span> g
-                      </div>
-                    </div>
-
-                    {/* Portion / scale info */}
-                    <p className="text-[11px] text-zinc-400 mb-2">
-                      Portion multiplier:{" "}
-                      <span className="font-semibold text-zinc-200">
-                        {ms.scale.toFixed(2)}×
-                      </span>{" "}
-                      of base recipe.
+                      <p className="text-[11px] text-zinc-400 mt-2">
+                        Ingredients: {meal.ingredients}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-yellow-400">
+                      No meal found for this slot
                     </p>
-
-                    {/* Optional recipe link */}
-                    {ms.recipeUrl && (
-                      <a
-                        href={ms.recipeUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center text-[11px] text-blue-400 hover:text-blue-300 underline"
-                      >
-                        View full recipe
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
+                  )}
+                </div>
+              ))}
             </div>
-          ) : (
-            <div className="mt-6 text-sm text-yellow-400">
-              No meal suggestions found for your current filters. Try relaxing
-              diet preference or restrictions.
-            </div>
-          )}
+          </div>
         </div>
       )}
     </div>

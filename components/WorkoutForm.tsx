@@ -1,22 +1,21 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { WorkoutRequestSchema } from "@/lib/schemas";
 import type z from "zod";
-import { POST } from "@/app/api/generate-diet/route";
+import { downloadPDF, downloadWorkoutPDF } from "@/lib/pdf";
 
 // z.input<typeof WorkoutRequestSchema> means "whatever the schema expects as input".
 type WorkoutInput = z.input<typeof WorkoutRequestSchema>;
 
 interface WorkoutPlanResult {
-  workoutResponseId: number;
   planId: number;
   plan: {
-    goal: string;
-    fitnessLevel: string;
+    goal: "WEIGHT_LOSS" | "MUSCLE_GAIN" | "MAINTENANCE" | "ENDURANCE";
+    fitnessLevel: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
     daysPerWeek: number;
-    location: string;
+    location: "HOME" | "GYM";
     workoutTypes: string[];
     days: {
       dayLabel: string;
@@ -37,10 +36,14 @@ interface WorkoutPlanResult {
 
 export default function WorkoutForm() {
   const [result, setResult] = useState<WorkoutPlanResult | null>(null);
-
   const [loading, setLoading] = useState(false);
-
   const [error, setError] = useState<string | null>(null);
+  const [hasDietPlan, setHasDietPlan] = useState(false);
+
+  useEffect(() => {
+    const dietPlan = localStorage.getItem('dietPlan');
+    setHasDietPlan(!!dietPlan);
+  }, []);
 
   const {
     register,
@@ -59,9 +62,9 @@ export default function WorkoutForm() {
   });
 
   const onSubmit = async (data: WorkoutInput) => {
-    setLoading: true;
-    setError: null;
-    setResult: null;
+    setLoading(true);
+    setError(null);
+    setResult(null);
 
     try {
       const res = await fetch("/api/generate-workout", {
@@ -77,6 +80,11 @@ export default function WorkoutForm() {
       } else {
         // If everything is fine, we store the plan in result.
         setResult(json as WorkoutPlanResult);
+        // Save workout plan to localStorage for PDF generation
+        localStorage.setItem('workoutPlan', JSON.stringify(json.plan));
+        // Check if diet plan exists
+        const dietPlan = localStorage.getItem('dietPlan');
+        setHasDietPlan(!!dietPlan);
       }
     } catch (err) {
       // This catch block handles network errors (e.g., no internet).
@@ -291,8 +299,18 @@ export default function WorkoutForm() {
             <h3 className="text-xl font-semibold text-zinc-100">
               Your Workout Plan
             </h3>
-            <div className="text-sm text-zinc-500">
-              Plan ID: <span className="text-zinc-300">{result.planId}</span>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => downloadWorkoutPDF()}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200 flex items-center gap-2"
+              >
+                <span>Download PDF</span>
+                {hasDietPlan && (
+                  <span className="text-xs bg-green-700 px-2 py-1 rounded">
+                    + Diet
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 
@@ -402,19 +420,6 @@ export default function WorkoutForm() {
               </div>
             ))}
           </div>
-
-          {/* Raw JSON details (optional for debugging) */}
-          <details className="group mt-6">
-            <summary className="cursor-pointer text-sm font-medium text-zinc-300 hover:text-zinc-100 flex items-center gap-2">
-              <span className="transform group-open:rotate-90 transition-transform">
-                ▶
-              </span>
-              View Raw Plan JSON (for dev/debug)
-            </summary>
-            <pre className="mt-3 bg-zinc-950 border border-zinc-800 rounded-lg p-3 overflow-auto text-xs text-zinc-300 max-h-80">
-              {JSON.stringify(result.plan, null, 2)}
-            </pre>
-          </details>
         </div>
       )}
     </div>

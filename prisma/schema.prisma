@@ -3,86 +3,27 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+////////////////////////
+// USER & AUTH
+////////////////////////
 
 model User {
   id               Int               @id @default(autoincrement())
   email            String?           @unique
   name             String?
   hashedPassword   String?
-  emailVerified    DateTime? 
+  emailVerified    DateTime?
   createdAt        DateTime          @default(now())
+
   dietResponses    DietResponse[]
-  plans            Plan[]
   workoutResponses WorkoutResponse[]
+  plans            Plan[]
   accounts         Account[]
-  sessions         Session[]   
-}
-
-model DietResponse {
-  id               Int           @id @default(autoincrement())
-  userId           Int?
-  age              Int
-  gender           Gender
-  currentWeightKg  Float
-  heightCm         Int
-  targetWeightKg   Float?
-  activityLevel    ActivityLevel
-  goal             FitnessGoal
-  dietPreference   String
-  mealFrequency    Int           @default(4)
-  foodRestrictions String?
-  createdAt        DateTime      @default(now())
-  user             User?         @relation(fields: [userId], references: [id])
-}
-
-model WorkoutResponse {
-  id           Int          @id @default(autoincrement())
-  userId       Int?
-  gender       Gender
-  fitnessLevel FitnessLevel
-  goal         FitnessGoal
-  location     String
-  workoutTypes Json
-  workoutDays  String
-  createdAt    DateTime     @default(now())
-  user         User?        @relation(fields: [userId], references: [id])
-}
-
-model Meal {
-  id          Int      @id @default(autoincrement())
-  title       String   @unique
-  calories    Int
-  proteinG    Float
-  fatG        Float
-  carbsG      Float
-  tags        Json?
-  ingredients String?
-  recipeUrl   String?
-  createdAt   DateTime @default(now())
-}
-
-model Exercise {
-  id           Int      @id @default(autoincrement())
-  name         String
-  muscleGroup  String
-  equipment    String
-  difficulty   String
-  instructions String?
-  repsTemplate String?
-  createdAt    DateTime @default(now())
-}
-
-model Plan {
-  id          Int      @id @default(autoincrement())
-  userId      Int?
-  type        String
-  title       String?
-  payload     Json
-  generatedAt DateTime @default(now())
-  user        User?    @relation(fields: [userId], references: [id])
+  sessions         Session[]
 }
 
 model Account {
@@ -91,19 +32,18 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?   
-  access_token      String?   
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?   
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
-
 
 model Session {
   id           Int      @id @default(autoincrement())
@@ -122,6 +62,133 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+////////////////////////
+// QUESTIONNAIRES
+////////////////////////
+
+model DietResponse {
+  id               Int           @id @default(autoincrement())
+  userId           Int?
+  age              Int
+  gender           Gender
+  currentWeightKg  Float
+  heightCm         Int
+  activityLevel    ActivityLevel
+  goal             GoalType
+  dietPreference   DietType
+  mealFrequency    Int           @default(4)
+  foodRestrictions String?
+  createdAt        DateTime      @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
+model WorkoutResponse {
+  id           Int          @id @default(autoincrement())
+  userId       Int?
+  gender       Gender
+  fitnessLevel FitnessLevel
+  goal         GoalType
+  location     String
+  workoutTypes Json
+  workoutDays  String
+  createdAt    DateTime     @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
+////////////////////////
+// MEAL BLOCK ENGINE
+////////////////////////
+
+model Meal {
+  id                     Int       @id @default(autoincrement())
+
+  title                  String
+  mealType               MealType
+  goal                   GoalType
+  dietType               DietType
+
+  dailyCalorieBracketMin Int
+  dailyCalorieBracketMax Int
+
+  calories               Int        // kcal are whole numbers
+  proteinG               Float      // grams can be decimal
+  carbsG                 Float
+  fatG                   Float
+
+  ingredients             String
+  isPublished             Boolean   @default(true)
+
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([mealType, goal, dietType])
+  @@index([dailyCalorieBracketMin, dailyCalorieBracketMax])
+}
+
+
+////////////////////////
+// PLAN SNAPSHOTS
+////////////////////////
+
+model Plan {
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  type        String   // DIET | WORKOUT
+  title       String?
+  payload     Json
+  generatedAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
+////////////////////////
+// WORKOUT EXERCISES
+////////////////////////
+
+model Exercise {
+  id           Int      @id @default(autoincrement())
+  name         String
+  muscleGroup  String
+  equipment    String
+  difficulty   String
+  instructions String?
+  repsTemplate String?
+  createdAt    DateTime @default(now())
+}
+
+model ExerciseBlock {
+  id            Int      @id @default(autoincrement())
+
+  name          String
+  muscleGroup   String
+
+  goal          GoalType
+  fitnessLevel  FitnessLevel
+  location      WorkoutLocation
+  workoutType   WorkoutType
+
+  equipment     String
+  sets          Int
+  repsOrTime    String
+  restSec       Int
+
+  notes         String?
+  isPublished   Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([goal, fitnessLevel, location])
+  @@index([workoutType])
+}
+
+
+////////////////////////
+// ENUMS (STRICT)
+////////////////////////
+
 enum Gender {
   MALE
   FEMALE
@@ -136,15 +203,39 @@ enum ActivityLevel {
   SUPER_ACTIVE
 }
 
-enum FitnessGoal {
-  WEIGHT_LOSS
-  MUSCLE_GAIN
-  MAINTENANCE
-  ENDURANCE
-}
-
 enum FitnessLevel {
   BEGINNER
   INTERMEDIATE
   ADVANCED
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+enum GoalType {
+  WEIGHT_LOSS
+  MAINTENANCE
+  MUSCLE_GAIN
+  ENDURANCE
+}
+
+enum DietType {
+  VEG
+  NON_VEG
+}
+
+enum WorkoutLocation {
+  HOME
+  GYM
+}
+
+enum WorkoutType {
+  STRENGTH
+  CARDIO
+  HIIT
+  BODYWEIGHT
 }
