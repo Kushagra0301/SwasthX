@@ -11,7 +11,7 @@
     "seed": "node prisma/seed.mjs"
   },
   "prisma": {
-    "seed": "node prisma/seed_user.js"
+    "schema": "prisma/schema.prisma"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
