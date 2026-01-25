@@ -134,6 +134,15 @@ type WorkoutDay = {
   cooldown: string[];
 };
 
+type WorkoutPlan = {
+  goal: string;
+  fitnessLevel: string;
+  daysPerWeek: number;
+  location: string;
+  workoutTypes: string[];
+  days: WorkoutDay[];
+};
+
 /* ---------------------------------
    Helper: build one day with specific focus
 ----------------------------------*/
@@ -220,6 +229,33 @@ function buildDay(dayIndex: number, split: any, blocks: any[], usedExerciseIds: 
 }
 
 /* ---------------------------------
+   Helper: Convert workout plan to JSON-serializable object
+----------------------------------*/
+function serializeWorkoutPlan(plan: WorkoutPlan): Record<string, any> {
+  return {
+    goal: plan.goal,
+    fitnessLevel: plan.fitnessLevel,
+    daysPerWeek: plan.daysPerWeek,
+    location: plan.location,
+    workoutTypes: plan.workoutTypes,
+    days: plan.days.map(day => ({
+      dayLabel: day.dayLabel,
+      focus: day.focus,
+      warmup: day.warmup,
+      exercises: day.exercises.map(exercise => ({
+        name: exercise.name,
+        muscleGroup: exercise.muscleGroup,
+        sets: exercise.sets,
+        repsOrTime: exercise.repsOrTime,
+        equipment: exercise.equipment,
+        notes: exercise.notes
+      })),
+      cooldown: day.cooldown
+    }))
+  };
+}
+
+/* ---------------------------------
    POST
 ----------------------------------*/
 export async function POST(req: Request) {
@@ -249,6 +285,9 @@ export async function POST(req: Request) {
       },
     });
 
+    let workoutPlan: WorkoutPlan;
+    let planId: number;
+
     if (blocks.length === 0) {
       const fallbackBlocks = await prisma.exerciseBlock.findMany({
         where: {
@@ -276,43 +315,46 @@ export async function POST(req: Request) {
         days.push(day);
       }
 
-      return NextResponse.json({
-        ok: true,
-        planId: Date.now(),
-        plan: {
-          goal: payload.goal,
-          fitnessLevel: payload.fitnessLevel,
-          daysPerWeek: payload.daysPerWeek,
-          location: payload.location,
-          workoutTypes: payload.workoutTypes,
-          days,
-        },
-      });
-    }
-
-    const split = createWorkoutSplit(payload.daysPerWeek);
-    const days: WorkoutDay[] = [];
-    const usedExerciseIds = new Set<number>();
-
-    for (let i = 0; i < payload.daysPerWeek; i++) {
-      const daySplit = split[i % split.length];
-      const day = buildDay(i, daySplit, blocks, usedExerciseIds);
-      days.push(day);
-    }
-
-    return NextResponse.json({
-      ok: true,
-      planId: Date.now(),
-      plan: {
+      workoutPlan = {
         goal: payload.goal,
         fitnessLevel: payload.fitnessLevel,
         daysPerWeek: payload.daysPerWeek,
         location: payload.location,
         workoutTypes: payload.workoutTypes,
         days,
-      },
+      };
+      
+      planId = Date.now();
+    } else {
+      const split = createWorkoutSplit(payload.daysPerWeek);
+      const days: WorkoutDay[] = [];
+      const usedExerciseIds = new Set<number>();
+
+      for (let i = 0; i < payload.daysPerWeek; i++) {
+        const daySplit = split[i % split.length];
+        const day = buildDay(i, daySplit, blocks, usedExerciseIds);
+        days.push(day);
+      }
+
+      workoutPlan = {
+        goal: payload.goal,
+        fitnessLevel: payload.fitnessLevel,
+        daysPerWeek: payload.daysPerWeek,
+        location: payload.location,
+        workoutTypes: payload.workoutTypes,
+        days,
+      };
+      
+      planId = Date.now();
+    }
+
+    return NextResponse.json({
+      ok: true,
+      planId,
+      plan: workoutPlan,
     });
   } catch (err) {
+    console.error("generate-workout error", err);
     return NextResponse.json(
       { ok: false, error: "Server error" },
       { status: 500 }
