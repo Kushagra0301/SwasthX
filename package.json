@@ -10,9 +10,6 @@
     "test": "jest --runInBand",
     "seed": "node prisma/seed.mjs"
   },
-  "prisma": {
-    "schema": "prisma/schema.prisma"
-  },
   "dependencies": {
     "@auth/core": "^0.34.3",
     "@hookform/resolvers": "^5.2.2",
