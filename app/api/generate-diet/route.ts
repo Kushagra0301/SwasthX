@@ -297,6 +297,11 @@ async function generateDietWithMealCount(
   let paneerUsed = false;
   const usedMealTitles = new Set<string>();
 
+  // Add tracking for chana group
+  const chanaGroup = ['chana', 'sattu', 'besan'];
+  let chanaGroupUsed = 0;
+  const maxChanaGroup = 2; // Allow up to 2 uses per day to avoid too much restriction
+
   // Try multiple times to find a good combination
   let bestCombination: any = null;
   let bestScore = Infinity;
@@ -305,6 +310,7 @@ async function generateDietWithMealCount(
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const selectedMeals: Record<string, any> = {};
     paneerUsed = false;
+    chanaGroupUsed = 0;
     
     let totalCalories = 0;
     let totalProtein = 0;
@@ -343,6 +349,15 @@ async function generateDietWithMealCount(
       // Avoid repeating exact same meal title
       available = available.filter(meal => !usedMealTitles.has(meal.title));
 
+      // Filter to avoid overusing chana group
+      available = available.filter(meal => {
+        const mealIngs = meal.ingredients.toLowerCase();
+        if (chanaGroup.some(g => mealIngs.includes(g)) && chanaGroupUsed >= maxChanaGroup) {
+          return false;
+        }
+        return true;
+      });
+
       // If no meals available, use any meal
       if (available.length === 0) {
         available = [...pool];
@@ -376,6 +391,11 @@ async function generateDietWithMealCount(
       // Track paneer usage
       if (dietType === DietType.VEG && selectedMeal.ingredients.toLowerCase().includes("paneer")) {
         paneerUsed = true;
+      }
+
+      // Track chana group usage
+      if (chanaGroup.some(g => selectedMeal.ingredients.toLowerCase().includes(g))) {
+        chanaGroupUsed++;
       }
     }
 
