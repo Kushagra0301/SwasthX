@@ -58,17 +58,23 @@ export default function WorkoutForm() {
   const [formStep, setFormStep] = useState<"form" | "result">("form");
 
   // State to track checkbox selections for visual feedback
-  const [selectedTypes, setSelectedTypes] = useState<string[]>(["STRENGTH", "CARDIO"]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([
+    "STRENGTH",
+    "CARDIO",
+  ]);
 
   useEffect(() => {
-    const dietPlan = localStorage.getItem('dietPlan');
+    const dietPlan = localStorage.getItem("dietPlan");
     setHasDietPlan(!!dietPlan);
   }, []);
 
   useEffect(() => {
     if (loading) {
       const interval = setInterval(() => {
-        const randomMessage = WORKOUT_LOADING_MESSAGES[Math.floor(Math.random() * WORKOUT_LOADING_MESSAGES.length)];
+        const randomMessage =
+          WORKOUT_LOADING_MESSAGES[
+            Math.floor(Math.random() * WORKOUT_LOADING_MESSAGES.length)
+          ];
         setLoadingMessage(randomMessage);
       }, 3000);
       return () => clearInterval(interval);
@@ -123,13 +129,16 @@ export default function WorkoutForm() {
         setResult(json as WorkoutPlanResult);
         setFormStep("result");
         // Save workout plan to localStorage for PDF generation
-        localStorage.setItem('workoutPlan', JSON.stringify(json.plan));
+        localStorage.setItem("workoutPlan", JSON.stringify(json.plan));
         // Check if diet plan exists
-        const dietPlan = localStorage.getItem('dietPlan');
+        const dietPlan = localStorage.getItem("dietPlan");
         setHasDietPlan(!!dietPlan);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Network error - probably too busy lifting";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Network error - probably too busy lifting";
       setError(message);
     } finally {
       setLoading(false);
@@ -149,7 +158,7 @@ export default function WorkoutForm() {
       WEIGHT_LOSS: "🔥",
       MUSCLE_GAIN: "💪",
       MAINTENANCE: "⚖️",
-      ENDURANCE: "🏃‍♂️"
+      ENDURANCE: "🏃‍♂️",
     };
     return emojis[goal] || "🎯";
   };
@@ -158,7 +167,7 @@ export default function WorkoutForm() {
     const colors: Record<string, string> = {
       BEGINNER: "bg-green-500/20 text-green-300 border-green-500/30",
       INTERMEDIATE: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-      ADVANCED: "bg-red-500/20 text-red-300 border-red-500/30"
+      ADVANCED: "bg-red-500/20 text-red-300 border-red-500/30",
     };
     return colors[level] || "bg-zinc-800/50 text-zinc-300 border-zinc-700";
   };
@@ -171,12 +180,12 @@ export default function WorkoutForm() {
     if (!isSelected) {
       return "bg-zinc-800/30 border-zinc-700/50 text-zinc-400 hover:border-zinc-600";
     }
-    
+
     const colors: Record<string, string> = {
       STRENGTH: "bg-blue-500/20 border-blue-500/50 text-blue-300",
       CARDIO: "bg-red-500/20 border-red-500/50 text-red-300",
       HIIT: "bg-purple-500/20 border-purple-500/50 text-purple-300",
-      BODYWEIGHT: "bg-amber-500/20 border-amber-500/50 text-amber-300"
+      BODYWEIGHT: "bg-amber-500/20 border-amber-500/50 text-amber-300",
     };
     return colors[type] || "bg-zinc-800/50 text-zinc-300 border-zinc-700";
   };
@@ -186,7 +195,7 @@ export default function WorkoutForm() {
       STRENGTH: "💪",
       CARDIO: "🏃‍♂️",
       HIIT: "🔥",
-      BODYWEIGHT: "🙌"
+      BODYWEIGHT: "🙌",
     };
     return icons[type] || "🏋️‍♂️";
   };
@@ -196,7 +205,7 @@ export default function WorkoutForm() {
       STRENGTH: "Strength",
       CARDIO: "Cardio",
       HIIT: "HIIT",
-      BODYWEIGHT: "Bodyweight"
+      BODYWEIGHT: "Bodyweight",
     };
     return labels[type] || type;
   };
@@ -231,7 +240,7 @@ export default function WorkoutForm() {
                 <div className="w-16 h-16 border-4 border-transparent border-b-orange-500 rounded-full absolute top-4 left-4 animate-spin-reverse"></div>
                 <div className="w-8 h-8 border-4 border-transparent border-r-yellow-500 rounded-full absolute top-8 left-8 animate-spin"></div>
               </div>
-              
+
               <h3 className="text-xl font-semibold text-zinc-100 mb-4">
                 Pumping up your workout plan...
               </h3>
@@ -356,7 +365,9 @@ export default function WorkoutForm() {
                     <label className="block text-sm font-medium text-zinc-300">
                       Days per Week
                     </label>
-                    <span className="text-xs text-zinc-500">How committed?</span>
+                    <span className="text-xs text-zinc-500">
+                      How committed?
+                    </span>
                   </div>
                   <div className="relative">
                     <input
@@ -382,58 +393,66 @@ export default function WorkoutForm() {
                     <label className="block text-sm font-medium text-zinc-300">
                       Workout Types You Prefer
                     </label>
-                    <span className="text-xs text-zinc-500">Pick your pain 😅</span>
+                    <span className="text-xs text-zinc-500">
+                      Pick your pain 😅
+                    </span>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {["STRENGTH", "CARDIO", "HIIT", "BODYWEIGHT"].map((type) => {
-                      const isSelected = selectedTypes.includes(type);
-                      
-                      return (
-                        <label
-                          key={type}
-                          htmlFor={`workout-type-${type}`}
-                          className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all duration-300 hover:scale-[1.02] ${getWorkoutTypeColor(type, isSelected)}`}
-                        >
-                          <div className="relative">
-                            <input
-                              type="checkbox"
-                              id={`workout-type-${type}`}
-                              value={type}
-                              {...register("workoutTypes")}
-                              className="absolute w-5 h-5 opacity-0 cursor-pointer"
-                            />
-                            <div className={`w-5 h-5 border-2 rounded-md flex items-center justify-center transition-all duration-200 ${
-                              isSelected
-                                ? "bg-blue-500 border-blue-500"
-                                : "border-zinc-600 bg-zinc-800/50"
-                            }`}>
-                              {isSelected && (
-                                <svg
-                                  className="w-3 h-3 text-white"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="3"
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                              )}
+                    {["STRENGTH", "CARDIO", "HIIT", "BODYWEIGHT"].map(
+                      (type) => {
+                        const isSelected = selectedTypes.includes(type);
+
+                        return (
+                          <label
+                            key={type}
+                            htmlFor={`workout-type-${type}`}
+                            className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all duration-300 hover:scale-[1.02] ${getWorkoutTypeColor(type, isSelected)}`}
+                          >
+                            <div className="relative">
+                              <input
+                                type="checkbox"
+                                id={`workout-type-${type}`}
+                                value={type}
+                                {...register("workoutTypes")}
+                                className="absolute w-5 h-5 opacity-0 cursor-pointer"
+                              />
+                              <div
+                                className={`w-5 h-5 border-2 rounded-md flex items-center justify-center transition-all duration-200 ${
+                                  isSelected
+                                    ? "bg-blue-500 border-blue-500"
+                                    : "border-zinc-600 bg-zinc-800/50"
+                                }`}
+                              >
+                                {isSelected && (
+                                  <svg
+                                    className="w-3 h-3 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="3"
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">{getWorkoutTypeIcon(type)}</span>
-                            <span className="text-zinc-200 text-sm font-medium">
-                              {getWorkoutTypeLabel(type)}
-                            </span>
-                          </div>
-                        </label>
-                      );
-                    })}
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">
+                                {getWorkoutTypeIcon(type)}
+                              </span>
+                              <span className="text-zinc-200 text-sm font-medium">
+                                {getWorkoutTypeLabel(type)}
+                              </span>
+                            </div>
+                          </label>
+                        );
+                      },
+                    )}
                   </div>
                   <div className="mt-3 text-xs text-zinc-500 flex items-center gap-2">
                     <div className="w-2 h-2 bg-blue-500/50 rounded-full"></div>
@@ -441,7 +460,7 @@ export default function WorkoutForm() {
                   </div>
                   {errors.workoutTypes?.message && (
                     <p className="text-sm text-red-400 animate-shake mt-2">
-                      ⚠️ {errors.workoutTypes.message as string}
+                      ⚠️ Please select at least one workout type
                     </p>
                   )}
                 </div>
@@ -452,7 +471,7 @@ export default function WorkoutForm() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`px-8 py-3.5 font-medium rounded-xl transition-all duration-300 flex-1 sm:flex-none ${isValid ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700' : 'bg-zinc-800 cursor-not-allowed'} text-white shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
+                  className={`px-8 py-3.5 font-medium rounded-xl transition-all duration-300 flex-1 sm:flex-none ${isValid ? "bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700" : "bg-zinc-800 cursor-not-allowed"} text-white shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
                 >
                   <span className="flex items-center justify-center gap-2">
                     {loading ? (
@@ -461,13 +480,11 @@ export default function WorkoutForm() {
                         Pumping...
                       </>
                     ) : (
-                      <>
-                        🏋️‍♂️ Generate Workout Plan
-                      </>
+                      <>🏋️‍♂️ Generate Workout Plan</>
                     )}
                   </span>
                 </button>
-                
+
                 <button
                   type="button"
                   onClick={handleReset}
@@ -483,10 +500,14 @@ export default function WorkoutForm() {
               <div className="pt-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-zinc-500">
-                    {isValid ? "✓ All set! Ready to lift!" : "Fill in all the details above..."}
+                    {isValid
+                      ? "✓ All set! Ready to lift!"
+                      : "Fill in all the details above..."}
                   </span>
                   <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${isValid ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-700'}`}></div>
+                    <div
+                      className={`w-2 h-2 rounded-full ${isValid ? "bg-emerald-500 animate-pulse" : "bg-zinc-700"}`}
+                    ></div>
                     <span className="text-zinc-400">Form status</span>
                   </div>
                 </div>
@@ -504,9 +525,7 @@ export default function WorkoutForm() {
                 <p className="text-red-400 font-medium mb-1">
                   Oops! Something went wrong...
                 </p>
-                <p className="text-red-300/80 text-sm">
-                  {error}
-                </p>
+                <p className="text-red-300/80 text-sm">{error}</p>
                 <button
                   onClick={() => setError(null)}
                   className="mt-3 text-sm text-red-400 hover:text-red-300 transition-colors"
@@ -529,10 +548,11 @@ export default function WorkoutForm() {
                     Your Personalized Workout Plan 🎉
                   </h3>
                   <p className="text-zinc-400">
-                    {result.plan.days.length} days • Made with ❤️ (and lots of sweat)
+                    {result.plan.days.length} days • Made with ❤️ (and lots of
+                    sweat)
                   </p>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   <button
                     onClick={() => setFormStep("form")}
@@ -540,7 +560,7 @@ export default function WorkoutForm() {
                   >
                     ← Edit Details
                   </button>
-                  
+
                   <button
                     onClick={() => downloadWorkoutPDF()}
                     className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto"
@@ -561,7 +581,9 @@ export default function WorkoutForm() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 border border-zinc-700/30 rounded-xl p-5 hover:border-zinc-600/50 transition-all duration-300 hover:scale-[1.02] group">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="text-2xl">{getGoalEmoji(result.plan.goal)}</div>
+                    <div className="text-2xl">
+                      {getGoalEmoji(result.plan.goal)}
+                    </div>
                     <div className="text-xs text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded-full">
                       Goal
                     </div>
@@ -577,7 +599,9 @@ export default function WorkoutForm() {
 
                 <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 border border-zinc-700/30 rounded-xl p-5 hover:border-zinc-600/50 transition-all duration-300 hover:scale-[1.02] group">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="text-2xl">{getLocationEmoji(result.plan.location)}</div>
+                    <div className="text-2xl">
+                      {getLocationEmoji(result.plan.location)}
+                    </div>
                     <div className="text-xs text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded-full">
                       Location
                     </div>
@@ -603,7 +627,9 @@ export default function WorkoutForm() {
                     {result.plan.daysPerWeek}
                   </p>
                   <p className="text-xs text-zinc-500 mt-2">
-                    {result.plan.daysPerWeek === 7 ? "No rest for the wicked!" : "Rest days are important!"}
+                    {result.plan.daysPerWeek === 7
+                      ? "No rest for the wicked!"
+                      : "Rest days are important!"}
                   </p>
                 </div>
 
@@ -618,9 +644,7 @@ export default function WorkoutForm() {
                   <p className="text-2xl font-bold text-zinc-100">
                     {result.plan.fitnessLevel}
                   </p>
-                  <p className="text-xs text-zinc-500 mt-2">
-                    You got this! 👊
-                  </p>
+                  <p className="text-xs text-zinc-500 mt-2">You got this! 👊</p>
                 </div>
               </div>
 
@@ -661,24 +685,29 @@ export default function WorkoutForm() {
                       <div className="flex flex-col lg:flex-row lg:items-start justify-between mb-6 gap-4">
                         <div>
                           <div className="flex items-center gap-3 mb-2">
-                            <span className={`text-sm font-medium px-3 py-1 rounded-full ${getLevelColor(result.plan.fitnessLevel)}`}>
+                            <span
+                              className={`text-sm font-medium px-3 py-1 rounded-full ${getLevelColor(result.plan.fitnessLevel)}`}
+                            >
                               {day.dayLabel}
                             </span>
                             <span className="text-xs text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded-full">
-                              {getLocationEmoji(result.plan.location)} {result.plan.location}
+                              {getLocationEmoji(result.plan.location)}{" "}
+                              {result.plan.location}
                             </span>
                           </div>
                           <h5 className="text-xl font-bold text-zinc-100 mb-2">
                             {day.focus}
                           </h5>
                           <p className="text-zinc-400 text-sm">
-                            {day.exercises.length} exercises • Ready to crush it! 💥
+                            {day.exercises.length} exercises • Ready to crush
+                            it! 💥
                           </p>
                         </div>
-                        
+
                         <div className="flex flex-wrap gap-2">
                           <span className="text-xs text-zinc-400 bg-zinc-800/50 px-3 py-1.5 rounded-full">
-                            {getGoalEmoji(result.plan.goal)} {result.plan.goal.replace("_", " ")}
+                            {getGoalEmoji(result.plan.goal)}{" "}
+                            {result.plan.goal.replace("_", " ")}
                           </span>
                           <span className="text-xs text-zinc-400 bg-zinc-800/50 px-3 py-1.5 rounded-full">
                             {result.plan.fitnessLevel}
@@ -696,7 +725,10 @@ export default function WorkoutForm() {
                         </div>
                         <ul className="space-y-2 pl-5">
                           {day.warmup.map((w, i) => (
-                            <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
+                            <li
+                              key={i}
+                              className="text-sm text-zinc-300 flex items-start gap-2"
+                            >
                               <span className="text-zinc-500 mt-1">•</span>
                               <span>{w}</span>
                             </li>
@@ -733,12 +765,18 @@ export default function WorkoutForm() {
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <div className="text-sm font-bold text-zinc-100">{ex.sets} sets</div>
-                                  <div className="text-xs text-zinc-500">{ex.repsOrTime}</div>
+                                  <div className="text-sm font-bold text-zinc-100">
+                                    {ex.sets} sets
+                                  </div>
+                                  <div className="text-xs text-zinc-500">
+                                    {ex.repsOrTime}
+                                  </div>
                                 </div>
                               </div>
                               {ex.notes && (
-                                <p className="text-xs text-zinc-400 italic mt-2">💡 {ex.notes}</p>
+                                <p className="text-xs text-zinc-400 italic mt-2">
+                                  💡 {ex.notes}
+                                </p>
                               )}
                             </div>
                           ))}
@@ -755,7 +793,10 @@ export default function WorkoutForm() {
                         </div>
                         <ul className="space-y-2 pl-5">
                           {day.cooldown.map((c, i) => (
-                            <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
+                            <li
+                              key={i}
+                              className="text-sm text-zinc-300 flex items-start gap-2"
+                            >
                               <span className="text-zinc-500 mt-1">•</span>
                               <span>{c}</span>
                             </li>
@@ -773,10 +814,13 @@ export default function WorkoutForm() {
                     <div>
                       <p className="text-zinc-300 font-medium mb-1">Pro Tip!</p>
                       <p className="text-zinc-400 text-sm">
-                        Stay hydrated, listen to your body, and remember: progress takes time! 
-                        Don't skip warm-ups or cool-downs - they prevent injuries. 
-                        {result.plan.goal === "MUSCLE_GAIN" && " Make sure you're eating enough protein!"}
-                        {result.plan.goal === "WEIGHT_LOSS" && " Combine this with a proper diet for best results!"}
+                        Stay hydrated, listen to your body, and remember:
+                        progress takes time! Don't skip warm-ups or cool-downs -
+                        they prevent injuries.
+                        {result.plan.goal === "MUSCLE_GAIN" &&
+                          " Make sure you're eating enough protein!"}
+                        {result.plan.goal === "WEIGHT_LOSS" &&
+                          " Combine this with a proper diet for best results!"}
                       </p>
                     </div>
                   </div>
@@ -787,8 +831,9 @@ export default function WorkoutForm() {
             {/* Action Footer */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
               <p className="text-zinc-500 text-sm">
-                Plan ID: <span className="text-zinc-400 font-mono">{result.planId}</span> • 
-                Generated just now • Ready to transform! 🚀
+                Plan ID:{" "}
+                <span className="text-zinc-400 font-mono">{result.planId}</span>{" "}
+                • Generated just now • Ready to transform! 🚀
               </p>
               <button
                 onClick={handleReset}
@@ -804,67 +849,95 @@ export default function WorkoutForm() {
       {/* Add these styles for animations */}
       <style jsx global>{`
         @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
-        
+
         @keyframes slide-up {
-          from { 
+          from {
             opacity: 0;
             transform: translateY(20px);
           }
-          to { 
+          to {
             opacity: 1;
             transform: translateY(0);
           }
         }
-        
+
         @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-          20%, 40%, 60%, 80% { transform: translateX(5px); }
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          10%,
+          30%,
+          50%,
+          70%,
+          90% {
+            transform: translateX(-5px);
+          }
+          20%,
+          40%,
+          60%,
+          80% {
+            transform: translateX(5px);
+          }
         }
-        
+
         @keyframes spin-reverse {
-          from { transform: rotate(360deg); }
-          to { transform: rotate(0deg); }
+          from {
+            transform: rotate(360deg);
+          }
+          to {
+            transform: rotate(0deg);
+          }
         }
-        
+
         .animate-fade-in {
           animation: fade-in 0.5s ease-out;
         }
-        
+
         .animate-slide-up {
           animation: slide-up 0.5s ease-out;
         }
-        
+
         .animate-shake {
           animation: shake 0.5s ease-in-out;
         }
-        
+
         .animate-spin {
           animation: spin 1s linear infinite;
         }
-        
+
         .animate-spin-reverse {
           animation: spin-reverse 1s linear infinite;
         }
-        
+
         @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
-        
+
         /* Smooth transitions */
         * {
-          transition: background-color 0.3s ease, border-color 0.3s ease;
+          transition:
+            background-color 0.3s ease,
+            border-color 0.3s ease;
         }
-        
+
         /* Custom checkbox styles */
         input[type="checkbox"] {
           accent-color: #3b82f6; /* blue-500 */
         }
-        
+
         /* Hide the native checkbox but keep it accessible */
         input[type="checkbox"].absolute {
           position: absolute;

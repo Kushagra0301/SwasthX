@@ -1,11 +1,158 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FaFire, FaRunning, FaAppleAlt, FaDumbbell, FaHeartbeat, FaDownload, FaBolt, FaShieldAlt, FaUsers, FaStar } from "react-icons/fa";
 
 export default function Page() {
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
+
+  const handleLinkClick = (e: React.MouseEvent, url: string) => {
+    e.preventDefault();
+    setRedirectUrl(url);
+    setShowDisclaimer(true);
+  };
+
+  const handleAcceptDisclaimer = () => {
+    setShowDisclaimer(false);
+    if (redirectUrl) {
+      window.location.href = redirectUrl;
+    }
+  };
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (showDisclaimer) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showDisclaimer]);
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white overflow-hidden">
+      {/* Disclaimer Modal */}
+      {showDisclaimer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm"
+            onClick={() => setShowDisclaimer(false)}
+          />
+          
+          {/* Modal */}
+          <div className="relative bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-2xl border border-zinc-700/50 shadow-2xl w-full max-w-md animate-slide-up">
+            {/* Header */}
+            <div className="p-6 border-b border-zinc-700/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <span className="text-xl">⚠️</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-zinc-100">
+                    Important Disclaimer
+                  </h3>
+                  <p className="text-sm text-zinc-400 mt-1">
+                    Please read carefully before proceeding
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6 space-y-4">
+              <div className="space-y-3">
+                <p className="text-zinc-300 text-center">
+                  <span className="font-semibold text-red-400">SwastX</span> provides fitness and diet plans for informational purposes only.
+                </p>
+                
+                <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/30">
+                  <ul className="space-y-3 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400 mt-0.5">•</span>
+                      <span className="text-zinc-300">
+                        <span className="font-medium">Not Medical Advice:</span> These plans are not substitutes for professional medical advice, diagnosis, or treatment.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400 mt-0.5">•</span>
+                      <span className="text-zinc-300">
+                        <span className="font-medium">No Responsibility:</span> SwastX does not take any responsibility for any injuries, health issues, or damages resulting from following these plans.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400 mt-0.5">•</span>
+                      <span className="text-zinc-300">
+                        <span className="font-medium">Consult Professionals:</span> Always consult with qualified healthcare providers, nutritionists, or fitness trainers before starting any new program.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400 mt-0.5">•</span>
+                      <span className="text-zinc-300">
+                        <span className="font-medium">Personal Responsibility:</span> You are solely responsible for your health, safety, and well-being. Use these plans at your own risk.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-red-400 mt-0.5">•</span>
+                      <span className="text-zinc-300">
+                        <span className="font-medium">Individual Results May Vary:</span> Results depend on various factors including genetics, consistency, diet, and overall health.
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div className="flex items-start gap-3 bg-gradient-to-r from-red-900/20 to-orange-900/20 rounded-xl p-4 border border-red-500/20">
+                  <span className="text-2xl mt-0.5">💡</span>
+                  <div>
+                    <p className="text-sm font-medium text-zinc-300 mb-1">Important Note:</p>
+                    <p className="text-sm text-zinc-400">
+                      These plans are for general guidance only. What works for one person may not work for another. Listen to your body and adjust accordingly.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="p-6 pt-4 border-t border-zinc-700/50">
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={handleAcceptDisclaimer}
+                  className="px-4 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-medium rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
+                >
+                  I Understand & Accept All Terms
+                </button>
+                <button
+                  onClick={() => setShowDisclaimer(false)}
+                  className="px-4 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 font-medium rounded-xl border border-zinc-700/50 transition-all duration-300 hover:border-zinc-600"
+                >
+                  Cancel
+                </button>
+                <p className="text-xs text-center text-zinc-500 pt-2">
+                  By clicking "I Understand & Accept All Terms", you acknowledge that you have read and agree to this disclaimer.
+                </p>
+              </div>
+            </div>
+            
+            {/* Close button */}
+            <button
+              onClick={() => setShowDisclaimer(false)}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-300 transition-colors p-1 rounded-lg hover:bg-zinc-800/50"
+              aria-label="Close"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
@@ -34,7 +181,7 @@ export default function Page() {
         {/* Logo/Brand */}
         <div className="flex items-center justify-center gap-3 mb-8">
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent animate-gradient">
-            SwasthX
+            SwastX
           </h1>
         </div>
 
@@ -64,8 +211,8 @@ export default function Page() {
 
         {/* CTA BUTTONS */}
         <div className="mt-16 flex flex-col sm:flex-row gap-6 justify-center animate-slide-up" style={{ animationDelay: '0.6s' }}>
-          <Link
-            href="/questionnaires/diet"
+          <button
+            onClick={(e) => handleLinkClick(e, "/questionnaires/diet")}
             className="group relative px-10 py-5 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-lg shadow-2xl hover:shadow-3xl hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-white/10 to-blue-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
@@ -73,10 +220,10 @@ export default function Page() {
               <FaAppleAlt className="text-xl" />
               Generate Diet Plan
             </span>
-          </Link>
+          </button>
 
-          <Link
-            href="/questionnaires/workout"
+          <button
+            onClick={(e) => handleLinkClick(e, "/questionnaires/workout")}
             className="group relative px-10 py-5 rounded-2xl bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 transition-all duration-300 font-semibold text-lg shadow-2xl hover:shadow-3xl hover:scale-[1.02] active:scale-[0.98] overflow-hidden border border-zinc-800"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-white/10 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
@@ -84,7 +231,7 @@ export default function Page() {
               <FaDumbbell className="text-xl" />
               Generate Workout Plan
             </span>
-          </Link>
+          </button>
         </div>
 
         {/* Trust Badges */}
@@ -147,7 +294,7 @@ export default function Page() {
       <section className="relative max-w-6xl mx-auto px-6 pb-32 z-10">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Why Choose SwasthX? <span className="text-emerald-400">🚀</span>
+            Why Choose SwastX? <span className="text-emerald-400">🚀</span>
           </h2>
           <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
             Everything you need for a successful health journey
@@ -201,22 +348,22 @@ export default function Page() {
             Ready to Transform? <span className="text-blue-400">🔥</span>
           </h3>
           <p className="text-lg text-zinc-300 mb-8 max-w-2xl mx-auto">
-            Join thousands who've already started their health journey with SwasthX. 
+            Join thousands who've already started their health journey with SwastX. 
             It's free, instant, and actually works.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/questionnaires/diet"
+            <button
+              onClick={(e) => handleLinkClick(e, "/questionnaires/diet")}
               className="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold text-lg hover:scale-[1.02] active:scale-[0.98] shadow-xl"
             >
               🍽️ Start with Diet
-            </Link>
-            <Link
-              href="/questionnaires/workout"
+            </button>
+            <button
+              onClick={(e) => handleLinkClick(e, "/questionnaires/workout")}
               className="px-8 py-4 rounded-xl bg-gradient-to-r from-zinc-800 to-zinc-900 hover:from-zinc-900 hover:to-black transition-all duration-300 font-semibold text-lg border border-zinc-700 hover:scale-[1.02] active:scale-[0.98]"
             >
               💪 Start with Workout
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -228,7 +375,7 @@ export default function Page() {
             Built with ❤️ for people who want <span className="text-emerald-300">results</span>, not confusion.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-zinc-500">
-            <span>© {new Date().getFullYear()} SwasthX. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} SwastX. All rights reserved.</span>
             <span className="hidden sm:block">•</span>
             <span>Made by Kushagra</span>
             <span className="hidden sm:block">•</span>
