@@ -1,10 +1,8 @@
-// lib/pdf.ts
 import jsPDF from "jspdf";
 
 // Main function that checks what to download
 export async function downloadPDF() {
   try {
-    // Get current page URL to determine which page we're on
     const currentPage = window.location.pathname;
     
     if (currentPage.includes('/diet') || currentPage.includes('/diet-')) {
@@ -12,7 +10,6 @@ export async function downloadPDF() {
     } else if (currentPage.includes('/workout') || currentPage.includes('/workout-')) {
       await downloadWorkoutPDF();
     } else {
-      // Fallback: try to download whatever exists
       const dietPlanStr = localStorage.getItem('dietPlan');
       const workoutPlanStr = localStorage.getItem('workoutPlan');
       
@@ -200,7 +197,6 @@ function addCombinedCoverPage(pdf: jsPDF, dietPlan: any, workoutPlan: any) {
   const pageWidth = pdf.internal.pageSize.width;
   const centerX = pageWidth / 2;
   
-  // Determine title based on available plans
   let titleLine1 = "Your Personalized";
   let titleLine2 = "";
   
@@ -226,7 +222,6 @@ function addCombinedCoverPage(pdf: jsPDF, dietPlan: any, workoutPlan: any) {
   pdf.setFont("helvetica", "bold");
   pdf.text("SwasthX", centerX, 125, { align: "center" });
   
-  // Plan Summary
   let planSummary = "";
   if (dietPlan && workoutPlan) {
     planSummary = "Complete diet and workout plan";
@@ -273,7 +268,7 @@ function addDietPlanContent(pdf: jsPDF, plan: any) {
   yPos += 15;
   
   // Add horizontal line
-  pdf.setDrawColor(0, 150, 0); // Green color
+  pdf.setDrawColor(0, 150, 0);
   pdf.setLineWidth(0.5);
   pdf.line(margin, yPos, pageWidth - margin, yPos);
   yPos += 10;
@@ -321,33 +316,42 @@ function addDietPlanContent(pdf: jsPDF, plan: any) {
   pdf.text(`${plan.fatG?.min || 0} – ${plan.fatG?.max || 0} grams`, margin + 40, yPos);
   yPos += 15;
   
-  // Meal Suggestions Section
+  // Meal Suggestions Section - Now handling 6 meals
   if (plan.meals && typeof plan.meals === 'object') {
     pdf.setFontSize(16);
     pdf.setFont("helvetica", "bold");
     pdf.text("Daily Meal Structure", margin, yPos);
     yPos += 10;
     
-    const meals = [
-      { time: "Breakfast", key: "BREAKFAST" },
-      { time: "Lunch", key: "LUNCH" },
-      { time: "Dinner", key: "DINNER" },
-      { time: "Snack", key: "SNACK" }
-    ];
+    // Define meal order and labels for 6-meal structure
+    const mealOrder = ['BREAKFAST', 'SNACK1', 'LUNCH', 'SNACK2', 'DINNER', 'SNACK3', 'SNACK'];
+    const mealLabels: Record<string, string> = {
+      BREAKFAST: "Breakfast",
+      LUNCH: "Lunch",
+      DINNER: "Dinner",
+      SNACK: "Snack",
+      SNACK1: "Morning Snack",
+      SNACK2: "Afternoon Snack",
+      SNACK3: "Evening Snack"
+    };
     
-    for (const meal of meals) {
-      const mealData = plan.meals[meal.key];
+    let mealCount = 0;
+    
+    for (const mealKey of mealOrder) {
+      const mealData = plan.meals[mealKey];
       if (mealData) {
+        mealCount++;
+        
         // Check if we need a new page
         if (yPos > 250) {
           pdf.addPage();
           yPos = 20;
         }
         
-        // Meal header
+        // Meal header with count
         pdf.setFontSize(14);
         pdf.setFont("helvetica", "bold");
-        pdf.text(`${meal.time}:`, margin, yPos);
+        pdf.text(`Meal ${mealCount}: ${mealLabels[mealKey] || mealKey}`, margin, yPos);
         yPos += 8;
         
         // Meal title
@@ -356,38 +360,77 @@ function addDietPlanContent(pdf: jsPDF, plan: any) {
         pdf.text(`${mealData.title || "Custom meal"}`, margin + 5, yPos);
         yPos += 8;
         
-        // Calories
+        // Nutrition facts
         pdf.text(`Calories: ${mealData.calories || 0} kcal`, margin + 10, yPos);
         yPos += 7;
         
-        // Protein
         pdf.text(`Protein: ${mealData.proteinG || 0} g`, margin + 10, yPos);
         yPos += 7;
         
-        // Carbs
-        pdf.text(`Carbs: ${mealData.carbsG || 0} g`, margin + 10, yPos);
+        pdf.text(`Carbohydrates: ${mealData.carbsG || 0} g`, margin + 10, yPos);
         yPos += 7;
         
-        // Fat
         pdf.text(`Fat: ${mealData.fatG || 0} g`, margin + 10, yPos);
         yPos += 7;
         
-        // Ingredients
+        // Ingredients with better formatting
         if (mealData.ingredients) {
-          // Split long ingredients into multiple lines
-          const ingredients = mealData.ingredients;
-          const maxLineLength = 80;
-          
-          if (ingredients.length > maxLineLength) {
-            pdf.text(`Ingredients: ${ingredients.substring(0, maxLineLength)}...`, margin + 10, yPos);
-          } else {
-            pdf.text(`Ingredients: ${ingredients}`, margin + 10, yPos);
-          }
+          pdf.setFont("helvetica", "bold");
+          pdf.text(`Ingredients:`, margin + 10, yPos);
           yPos += 7;
+          
+          pdf.setFont("helvetica", "normal");
+          // Split ingredients by semicolon or comma
+          const ingredients = mealData.ingredients.split(/[;,]/).map((ing: string) => ing.trim()).filter(Boolean);
+          
+          if (ingredients.length > 0) {
+            for (const ingredient of ingredients) {
+              if (yPos > 270) {
+                pdf.addPage();
+                yPos = 20;
+              }
+              pdf.text(`• ${ingredient}`, margin + 15, yPos);
+              yPos += 7;
+            }
+          } else {
+            pdf.text(mealData.ingredients, margin + 15, yPos);
+            yPos += 7;
+          }
         }
         
         yPos += 10; // Space between meals
+        
+        // Add a subtle separator line between meals (except after the last one)
+        if (mealCount < Object.values(plan.meals).filter(Boolean).length) {
+          pdf.setDrawColor(200, 200, 200);
+          pdf.setLineWidth(0.2);
+          pdf.line(margin, yPos - 5, pageWidth - margin, yPos - 5);
+        }
       }
+    }
+    
+    // Add total summary at the end
+    if (plan.totals) {
+      if (yPos > 220) {
+        pdf.addPage();
+        yPos = 20;
+      }
+      
+      pdf.setFontSize(14);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Daily Totals:", margin, yPos);
+      yPos += 10;
+      
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Total Calories: ${plan.totals.calories || 0} kcal`, margin + 10, yPos);
+      yPos += 7;
+      pdf.text(`Total Protein: ${plan.totals.protein || 0} g`, margin + 10, yPos);
+      yPos += 7;
+      pdf.text(`Total Carbohydrates: ${plan.totals.carbs || 0} g`, margin + 10, yPos);
+      yPos += 7;
+      pdf.text(`Total Fat: ${plan.totals.fat || 0} g`, margin + 10, yPos);
+      yPos += 10;
     }
   }
   
@@ -409,7 +452,7 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
   yPos += 15;
   
   // Add horizontal line
-  pdf.setDrawColor(0, 100, 200); // Blue color
+  pdf.setDrawColor(0, 100, 200);
   pdf.setLineWidth(0.5);
   pdf.line(margin, yPos, pageWidth - margin, yPos);
   yPos += 10;
@@ -490,7 +533,6 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
         pdf.text(`${index + 1}. ${exercise}`, margin + 5, yPos);
         yPos += 7;
         
-        // Check for page break
         if (yPos > 270) {
           pdf.addPage();
           yPos = 20;
@@ -531,7 +573,6 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
           yPos += 7;
         }
         
-        // Check for page break
         if (yPos > 270) {
           pdf.addPage();
           yPos = 20;
@@ -558,7 +599,6 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
         pdf.text(`${index + 1}. ${exercise}`, margin + 5, yPos);
         yPos += 7;
         
-        // Check for page break
         if (yPos > 270) {
           pdf.addPage();
           yPos = 20;
