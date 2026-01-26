@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import Link from "next/link";
 import { FaFire, FaRunning, FaAppleAlt, FaDumbbell, FaHeartbeat, FaDownload, FaBolt, FaShieldAlt, FaUsers, FaStar } from "react-icons/fa";
@@ -33,7 +33,6 @@ export default function Page() {
       <section className="relative max-w-6xl mx-auto px-6 py-24 text-center z-10 animate-fade-in">
         {/* Logo/Brand */}
         <div className="flex items-center justify-center gap-3 mb-8">
-
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent animate-gradient">
             SwasthX
           </h1>
@@ -351,7 +350,7 @@ function FeatureItem({
   icon: React.ReactNode;
   title: string;
   desc: string;
-  color?: string;
+  color?: "blue" | "emerald" | "red" | "pink" | "purple" | "amber";
 }) {
   const colorClasses = {
     blue: "border-blue-500/20 hover:border-blue-500/40",
