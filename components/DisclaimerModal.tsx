@@ -6,9 +6,10 @@ import { useEffect } from "react";
 interface DisclaimerModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onAccept: () => void; // New: Handle acceptance (e.g., redirect)
 }
 
-export default function DisclaimerModal({ isOpen, onClose }: DisclaimerModalProps) {
+export default function DisclaimerModal({ isOpen, onClose, onAccept }: DisclaimerModalProps) {
   // Close modal on Escape key press
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -17,7 +18,7 @@ export default function DisclaimerModal({ isOpen, onClose }: DisclaimerModalProp
     
     if (isOpen) {
       document.addEventListener("keydown", handleEscape);
-      document.body.style.overflow = "hidden"; // Prevent scrolling
+      document.body.style.overflow = "hidden"; // Prevent background scrolling
     }
     
     return () => {
@@ -29,17 +30,17 @@ export default function DisclaimerModal({ isOpen, onClose }: DisclaimerModalProp
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm"
         onClick={onClose}
       />
       
-      {/* Modal */}
-      <div className="relative bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-2xl border border-zinc-700/50 shadow-2xl w-full max-w-md animate-slide-up">
+      {/* Modal - Added max-h-[90vh] and overflow-y-auto for scrolling on small screens */}
+      <div className="relative bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-2xl border border-zinc-700/50 shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-up overscroll-contain">
         {/* Header */}
-        <div className="p-6 border-b border-zinc-700/50">
+        <div className="p-6 border-b border-zinc-700/50 sticky top-0 bg-zinc-900/90 backdrop-blur-md z-10"> {/* Sticky header for better UX when scrolling */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
               <span className="text-xl">⚠️</span>
@@ -55,7 +56,7 @@ export default function DisclaimerModal({ isOpen, onClose }: DisclaimerModalProp
           </div>
         </div>
         
-        {/* Content */}
+        {/* Content - Flexible height */}
         <div className="p-6 space-y-4">
           <div className="space-y-3">
             <p className="text-zinc-300 text-center">
@@ -109,14 +110,20 @@ export default function DisclaimerModal({ isOpen, onClose }: DisclaimerModalProp
           </div>
         </div>
         
-        {/* Footer */}
-        <div className="p-6 pt-4 border-t border-zinc-700/50">
+        {/* Footer - Sticky for better UX */}
+        <div className="p-6 pt-4 border-t border-zinc-700/50 sticky bottom-0 bg-zinc-900/90 backdrop-blur-md z-10">
           <div className="flex flex-col gap-3">
             <button
-              onClick={onClose}
+              onClick={onAccept} // Use onAccept to proceed (e.g., redirect)
               className="px-4 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-medium rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
             >
               I Understand & Accept All Terms
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 font-medium rounded-xl border border-zinc-700/50 transition-all duration-300 hover:border-zinc-600"
+            >
+              Cancel
             </button>
             <p className="text-xs text-center text-zinc-500 pt-2">
               By clicking "I Understand & Accept All Terms", you acknowledge that you have read and agree to this disclaimer.
