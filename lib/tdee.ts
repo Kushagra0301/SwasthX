@@ -11,8 +11,7 @@ export type ActivityLevel =
 export type FitnessGoal =
   | "WEIGHT_LOSS"
   | "MUSCLE_GAIN"
-  | "MAINTENANCE"
-  | "ENDURANCE";
+  | "MAINTENANCE";
 
 export interface DietInput {
   age: number;
@@ -27,6 +26,13 @@ export interface DietInput {
 const round = (n: number) => Math.round(n);
 
 export function buildDietPlan(input: DietInput) {
+  if (input.weightKg <= 0 || input.heightCm <= 0 || input.age <= 0) {
+    throw new Error("weightKg, heightCm, and age must all be positive numbers");
+  }
+  if (input.mealFrequency !== undefined && input.mealFrequency <= 0) {
+    throw new Error("mealFrequency must be a positive number");
+  }
+
   const meals = input.mealFrequency ?? 4;
 
   // BMR
@@ -50,9 +56,10 @@ export function buildDietPlan(input: DietInput) {
 
   const tdee = bmr * factor[input.activityLevel];
 
-  // Goal adjustment
-  let minCalories = tdee;
-  let maxCalories = tdee;
+  // Goal adjustment. MAINTENANCE keeps a small deliberate band around TDEE
+  // rather than a single exact number, consistent with the other goals.
+  let minCalories = tdee - 100;
+  let maxCalories = tdee + 100;
 
   if (input.goal === "WEIGHT_LOSS") {
     minCalories = tdee - 500;

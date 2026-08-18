@@ -1,11 +1,15 @@
-// app/api/generate-diet/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { DietRequestSchema } from "@/lib/schemas";
 import { MealType, GoalType, DietType } from "@prisma/client";
 import { buildDietPlan } from "@/lib/tdee";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
-// Configuration
+const isDev = process.env.NODE_ENV !== "production";
+const devLog = (...args: unknown[]) => {
+  if (isDev) console.log(...args);
+};
+
 const MAX_PORTION_WEIGHT = 600;
 const MAX_INGREDIENT_LIMITS: Record<string, number> = {
   'rice': 150, 'dal': 120, 'wheat': 100, 'dalia': 100, 'oats': 100,
@@ -24,6 +28,12 @@ const MAX_INGREDIENT_LIMITS: Record<string, number> = {
   'oil': 4, 'ghee': 2, 'butter': 2, 'cream': 2,
   'egg': 6, 'chicken': 300, 'fish': 300, 'keema': 200,
 };
+
+// Sorted longest-key-first so a specific ingredient (e.g. "peanut") is matched
+// before a shorter substring of it that happens to also be a valid key ("pea").
+const SORTED_INGREDIENT_LIMITS = Object.entries(MAX_INGREDIENT_LIMITS).sort(
+  (a, b) => b[0].length - a[0].length
+);
 
 interface Nutrition {
   calories: number;
@@ -46,7 +56,6 @@ const INGREDIENT_NUTRITION: Record<string, Nutrition> = {
   'chicken keema': { calories: 1.65, protein: 0.31, carbs: 0, fat: 0.036 },
 };
 
-// Find calorie bracket
 function findCalorieBracket(dailyCalories: number) {
   const base = 1000;
   const step = 200;
@@ -63,7 +72,6 @@ function findCalorieBracket(dailyCalories: number) {
   return { bracketMin, bracketMax };
 }
 
-// Calculate meal targets based on daily targets and meal count
 function calculateMealTargets(dailyTargets: any, mealCount: number = 4) {
   let mealRatios: Record<string, number>;
   if (mealCount === 4) {
@@ -155,7 +163,6 @@ function calculateNutrition(ingredients: string): { calories: number; protein: n
   return { calories: Math.round(cal), protein: Math.round(p), carbs: Math.round(c), fat: Math.round(f) };
 }
 
-// Get available meals from the correct calorie bracket
 async function getAvailableMeals(
   mealType: MealType,
   goal: GoalType,
@@ -164,10 +171,9 @@ async function getAvailableMeals(
   targetCalories: number
 ) {
   try {
-    // Find the correct calorie bracket
     const { bracketMin, bracketMax } = findCalorieBracket(dailyCalories);
-  
-    console.log(`Fetching ${mealType} meals:`, {
+
+    devLog(`Fetching ${mealType} meals:`, {
       goal,
       dietType,
       bracket: `${bracketMin}-${bracketMax}`,
@@ -184,9 +190,9 @@ async function getAvailableMeals(
       },
       take: 100,
     });
-  
-    console.log(`Found ${meals.length} ${mealType} meals for ${dietType} ${goal}`);
-  
+
+    devLog(`Found ${meals.length} ${mealType} meals for ${dietType} ${goal}`);
+
     // Correct macros for egg-related meals
     const correctedMeals = meals.map(meal => {
       const isEggRelated = meal.title.toLowerCase().includes('egg');
@@ -209,33 +215,28 @@ async function getAvailableMeals(
   }
 }
 
-// Simple scaling without extreme filtering
 function scaleMeal(meal: any, targetCalories: number) {
-  // Calculate scale factor
-  let scale = targetCalories / meal.calories;
-  // Allow reasonable scaling (0.3 to 3.0)
+  let scale = meal.calories > 0 ? targetCalories / meal.calories : 1;
   scale = Math.max(0.3, Math.min(3.0, scale));
-  // For non-veg, be more generous with scaling
+  // Non-veg meals get a wider scaling window since portions vary more.
   if (meal.dietType === DietType.NON_VEG) {
     scale = Math.max(0.5, Math.min(2.5, scale));
   }
-  // Parse and scale ingredients
   const ingredients = meal.ingredients.split(';').map((ing: string) => {
     const trimmed = ing.trim();
     if (!trimmed) return '';
-  
+
     // Regex: name (non-greedy), amount (num), optional unit (non-space)
     const match = trimmed.match(/^(.*?)\s*(\d+(?:\.\d+)?)\s*(\S*)$/);
     if (!match) return trimmed;
-  
+
     const [, name, amountStr, unit] = match;
     const amount = parseFloat(amountStr) || 1;
     const ingName = name.toLowerCase().trim();
-  
+
     let scaledAmount = amount * scale;
-  
-    // Apply ingredient limits
-    for (const [key, limit] of Object.entries(MAX_INGREDIENT_LIMITS)) {
+
+    for (const [key, limit] of SORTED_INGREDIENT_LIMITS) {
       if (ingName.includes(key)) {
         if (['egg', 'bread', 'roti', 'chapati', 'paratha'].includes(key)) {
           scaledAmount = Math.min(Math.round(scaledAmount), limit);
@@ -245,18 +246,15 @@ function scaleMeal(meal: any, targetCalories: number) {
         break;
       }
     }
-  
-    // Round appropriately
+
     if (unit === 'tsp' || unit === 'tbsp') {
       scaledAmount = Math.round(scaledAmount * 10) / 10;
     } else {
       scaledAmount = Math.round(scaledAmount);
     }
-  
-    // Reassemble with trimmed name/unit
+
     return `${name.trim()} ${scaledAmount}${unit}`;
   }).join('; ');
-  // Calculate scaled nutrition
   let scaledCalories = Math.round(meal.calories * scale);
   let scaledProtein = Math.round(meal.proteinG * scale);
   let scaledCarbs = Math.round(meal.carbsG * scale);
@@ -285,7 +283,6 @@ function scaleMeal(meal: any, targetCalories: number) {
   };
 }
 
-// Generate diet with meal count
 async function generateDietWithMealCount(
   dailyTargets: any,
   goal: GoalType,
@@ -294,13 +291,12 @@ async function generateDietWithMealCount(
 ) {
   const dailyCalories = dailyTargets.calories.avg;
   const mealTargets = calculateMealTargets(dailyTargets, mealCount);
-  console.log('\n=== Generating Diet Plan ===');
-  console.log('Daily calories:', dailyCalories);
-  console.log('Goal:', goal);
-  console.log('Diet type:', dietType);
-  console.log('Meal count:', mealCount);
-  console.log('Meal targets:', mealTargets);
-  // Get all available meals
+  devLog('\n=== Generating Diet Plan ===');
+  devLog('Daily calories:', dailyCalories);
+  devLog('Goal:', goal);
+  devLog('Diet type:', dietType);
+  devLog('Meal count:', mealCount);
+  devLog('Meal targets:', mealTargets);
   const mealPools = {
     BREAKFAST: await getAvailableMeals(
       MealType.BREAKFAST,
@@ -331,22 +327,20 @@ async function generateDietWithMealCount(
       mealTargets[mealCount === 4 ? 'SNACK' : 'SNACK1']?.calories.avg || 200
     ),
   };
-  console.log('\n=== Available Meals ===');
-  console.log('Breakfast:', mealPools.BREAKFAST.length);
-  console.log('Lunch:', mealPools.LUNCH.length);
-  console.log('Dinner:', mealPools.DINNER.length);
-  console.log('Snack:', mealPools.SNACK.length);
-  // Check if we have enough meals
+  devLog('\n=== Available Meals ===');
+  devLog('Breakfast:', mealPools.BREAKFAST.length);
+  devLog('Lunch:', mealPools.LUNCH.length);
+  devLog('Dinner:', mealPools.DINNER.length);
+  devLog('Snack:', mealPools.SNACK.length);
   if (
     mealPools.BREAKFAST.length === 0 ||
     mealPools.LUNCH.length === 0 ||
     mealPools.DINNER.length === 0 ||
     mealPools.SNACK.length === 0
   ) {
-    console.error('Not enough meals available');
+    console.error('Not enough meals available for the requested goal/diet/calorie bracket');
     return null;
   }
-  // Define meal slots based on count
   const slots = mealCount === 4
     ? ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK']
     : mealCount === 5
@@ -466,33 +460,41 @@ async function generateDietWithMealCount(
     }
   }
   if (!bestCombination) {
-    console.error('Could not find any combination');
+    console.error(`Could not find a valid ${mealCount}-meal combination for goal=${goal} dietType=${dietType}`);
     return null;
   }
-  console.log('\n=== Selected Meals ===');
-  for (const slot of slots) {
-    const meal = bestCombination.meals[slot];
-    console.log(`${slot}: ${meal.title} (${meal.calories} cal, ${meal.proteinG}g protein)`);
+  if (isDev) {
+    devLog('\n=== Selected Meals ===');
+    for (const slot of slots) {
+      const meal = bestCombination.meals[slot];
+      devLog(`${slot}: ${meal.title} (${meal.calories} cal, ${meal.proteinG}g protein)`);
+    }
+    devLog('Total:', bestCombination.totals);
   }
-  console.log('Total:', bestCombination.totals);
   return bestCombination;
 }
 export async function POST(request: Request) {
+  const { allowed, retryAfterSeconds } = rateLimit(getClientIp(request));
+  if (!allowed) {
+    return NextResponse.json(
+      { ok: false, error: "Too many requests. Please wait a moment and try again." },
+      { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } }
+    );
+  }
   try {
     const body = await request.json();
     const parsed = DietRequestSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({
         ok: false,
-        error: "Invalid input data"
+        error: "Please check the highlighted fields and try again.",
+        details: parsed.error.flatten().fieldErrors
       }, { status: 400 });
     }
     const payload = parsed.data;
-    // Build diet plan
     const plan = buildDietPlan(payload);
-    const goal: GoalType = payload.goal === "ENDURANCE" ? GoalType.MAINTENANCE : payload.goal;
+    const goal: GoalType = payload.goal;
     const dietType: DietType = payload.dietPreference === "NON_VEG" ? DietType.NON_VEG : DietType.VEG;
-    // Calculate daily targets
     const dailyTargets = {
       calories: {
         min: plan.totalCalories.min,
@@ -515,24 +517,27 @@ export async function POST(request: Request) {
         avg: Math.round((plan.fatG.min + plan.fatG.max) / 2)
       }
     };
-    console.log('\n=== User Input ===');
-    console.log('Age:', payload.age);
-    console.log('Gender:', payload.gender);
-    console.log('Weight:', payload.weightKg, 'kg');
-    console.log('Height:', payload.heightCm, 'cm');
-    console.log('Activity:', payload.activityLevel);
-    console.log('Goal:', goal);
-    console.log('Diet type:', dietType);
-    console.log('Daily calories:', dailyTargets.calories.avg);
-    // Try different meal counts
+    if (isDev) {
+      devLog('\n=== User Input ===');
+      devLog('Age:', payload.age);
+      devLog('Gender:', payload.gender);
+      devLog('Weight:', payload.weightKg, 'kg');
+      devLog('Height:', payload.heightCm, 'cm');
+      devLog('Activity:', payload.activityLevel);
+      devLog('Goal:', goal);
+      devLog('Diet type:', dietType);
+      devLog('Daily calories:', dailyTargets.calories.avg);
+    }
+
     let mealCount = dailyTargets.calories.avg < 2000 ? 4 : 6;
     let dietResult = null;
-  
-    // Try in order: preferred, then alternatives
-    const mealCountsToTry = [mealCount, 5, 4, 3].filter(c => c >= 3 && c <= 6);
-  
+
+    // calculateMealTargets only supports 4/5/6 meals a day; try the
+    // preferred count first, then fall back to the other supported ones.
+    const mealCountsToTry = [...new Set([mealCount, 5, 4, 6])].filter(c => c >= 4 && c <= 6);
+
     for (const count of mealCountsToTry) {
-      console.log(`\nTrying ${count} meals...`);
+      devLog(`\nTrying ${count} meals...`);
       dietResult = await generateDietWithMealCount(dailyTargets, goal, dietType, count);
       if (dietResult) {
         mealCount = count;
@@ -540,18 +545,20 @@ export async function POST(request: Request) {
       }
     }
     if (!dietResult) {
+      console.error('Unable to generate diet plan for', { goal, dietType, dailyCalories: dailyTargets.calories.avg });
       return NextResponse.json({
         ok: false,
-        error: "Unable to generate diet plan. Please try different preferences.",
-        debug: {
-          dailyCalories: dailyTargets.calories.avg,
-          goal: goal,
-          dietType: dietType,
-          bracket: findCalorieBracket(dailyTargets.calories.avg)
-        }
+        error: "We couldn't build a diet plan with those preferences. Try adjusting your goal or diet type.",
+        ...(isDev && {
+          debug: {
+            dailyCalories: dailyTargets.calories.avg,
+            goal: goal,
+            dietType: dietType,
+            bracket: findCalorieBracket(dailyTargets.calories.avg)
+          }
+        })
       }, { status: 500 });
     }
-    // Prepare response
     const response: any = {
       ok: true,
       plan: {
@@ -561,9 +568,8 @@ export async function POST(request: Request) {
       meals: dietResult.meals,
       totals: dietResult.totals,
       mealCount: mealCount,
-      planId: Date.now(),
+      planId: crypto.randomUUID(),
     };
-    // Add notes
     if (dailyTargets.calories.avg > 3000) {
       response.note = "High calorie plan. Consider splitting meals if needed.";
     } else if (dailyTargets.calories.avg < 1500) {
@@ -575,13 +581,13 @@ export async function POST(request: Request) {
       response.dietNote = "Non-vegetarian plan with animal protein sources.";
     }
     return NextResponse.json(response);
-  
+
   } catch (error) {
     console.error('Error generating diet plan:', error);
     return NextResponse.json({
       ok: false,
-      error: "Internal server error",
-      message: error instanceof Error ? error.message : 'Unknown error'
+      error: "Something went wrong while generating your diet plan. Please try again.",
+      ...(isDev && { message: error instanceof Error ? error.message : 'Unknown error' })
     }, { status: 500 });
   }
 }

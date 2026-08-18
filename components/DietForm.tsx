@@ -6,6 +6,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { DietRequestSchema } from "../lib/schemas";
 import type { z } from "zod";
 import { downloadDietPDF } from "@/lib/pdf";
+import { useToast } from "@/components/Toast";
+import {
+  FiZap,
+  FiTarget,
+  FiTrendingUp,
+  FiDroplet,
+  FiDownload,
+  FiRefreshCw,
+  FiAlertCircle,
+  FiInfo,
+  FiSunrise,
+  FiSun,
+  FiMoon,
+  FiCoffee,
+} from "react-icons/fi";
 
 type DietInput = z.input<typeof DietRequestSchema>;
 
@@ -23,8 +38,7 @@ type MealBlock = {
 };
 
 interface DietPlanResult {
-  dietResponseId: number;
-  planId: number;
+  planId: string;
   plan: {
     totalCalories: { min: number; max: number };
     perMeal: { calories: { min: number; max: number } };
@@ -41,16 +55,13 @@ interface DietPlanResult {
   };
 }
 
-// Sarcastic loading messages
 const LOADING_MESSAGES = [
   "Calculating how many avocados you can afford...",
-  "Asking ChatGPT for kale recipes...",
   "Convincing your taste buds this will be fine...",
   "Measuring willpower in pizza slices...",
   "Finding excuses for cheat days...",
   "Pretending broccoli tastes good...",
   "Counting calories so you don't have to...",
-  "Making sure you'll still have energy for doomscrolling...",
   "Calculating optimal coffee-to-water ratio...",
   "Resisting the urge to recommend pizza...",
 ];
@@ -62,29 +73,45 @@ const MEAL_LABELS: Record<string, string> = {
   SNACK: "Snack",
   SNACK1: "Morning Snack",
   SNACK2: "Afternoon Snack",
-  SNACK3: "Evening Snack"
+  SNACK3: "Evening Snack",
 };
 
-const MEAL_ORDER = ['BREAKFAST', 'SNACK1', 'LUNCH', 'SNACK2', 'DINNER', 'SNACK3', 'SNACK'];
+const MEAL_ICONS: Record<string, React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>> = {
+  BREAKFAST: FiSunrise,
+  LUNCH: FiSun,
+  DINNER: FiMoon,
+  SNACK: FiCoffee,
+  SNACK1: FiCoffee,
+  SNACK2: FiCoffee,
+  SNACK3: FiCoffee,
+};
+
+const MEAL_ORDER = ["BREAKFAST", "SNACK1", "LUNCH", "SNACK2", "DINNER", "SNACK3", "SNACK"];
+
+const inputClass = (hasError?: boolean) =>
+  `w-full rounded-xl border ${
+    hasError ? "border-danger/60" : "border-border"
+  } bg-surface px-4 py-3 text-text placeholder-text-muted transition-colors focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent`;
 
 export default function DietForm() {
+  const { showToast } = useToast();
   const [result, setResult] = useState<DietPlanResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasWorkoutPlan, setHasWorkoutPlan] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState<string>("");
   const [formStep, setFormStep] = useState<"form" | "result">("form");
+  const [lastSubmitted, setLastSubmitted] = useState<DietInput | null>(null);
 
   useEffect(() => {
-    const workoutPlan = localStorage.getItem('workoutPlan');
+    const workoutPlan = localStorage.getItem("workoutPlan");
     setHasWorkoutPlan(!!workoutPlan);
   }, []);
 
   useEffect(() => {
     if (loading) {
       const interval = setInterval(() => {
-        const randomMessage = LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)];
-        setLoadingMessage(randomMessage);
+        setLoadingMessage(LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)]);
       }, 3000);
       return () => clearInterval(interval);
     }
@@ -104,7 +131,7 @@ export default function DietForm() {
       heightCm: 175,
       activityLevel: "MODERATE",
       goal: "WEIGHT_LOSS",
-      dietPreference: "NON_VEG"
+      dietPreference: "NON_VEG",
     },
   });
 
@@ -122,37 +149,40 @@ export default function DietForm() {
       });
 
       const json = await res.json();
-      if (!res.ok) {
-        setError(json?.error || "Our food processor overheated. Try again?");
+      if (!res.ok || !json.ok) {
+        const message = json?.error || "Our food processor overheated. Try again?";
+        setError(message);
+        showToast(message, "error");
       } else {
-        // Process meals to ensure all 6 meals are properly structured
         const processedMeals = processMealsData(json.meals);
-        const updatedResult = {
-          ...json,
-          meals: processedMeals
-        };
-        
+        const updatedResult = { ...json, meals: processedMeals };
+
         setResult(updatedResult);
         setFormStep("result");
-        
-        // Save diet plan to localStorage for PDF generation
-        localStorage.setItem('dietPlan', JSON.stringify({
-          ...json.plan,
-          meals: processedMeals,
-          totals: json.totals || {
-            calories: Object.values(processedMeals).reduce((sum, meal) => sum + (meal?.calories || 0), 0),
-            protein: Object.values(processedMeals).reduce((sum, meal) => sum + (meal?.proteinG || 0), 0),
-            carbs: Object.values(processedMeals).reduce((sum, meal) => sum + (meal?.carbsG || 0), 0),
-            fat: Object.values(processedMeals).reduce((sum, meal) => sum + (meal?.fatG || 0), 0)
-          }
-        }));
-        
-        // Check if workout plan exists
-        const workoutPlan = localStorage.getItem('workoutPlan');
+        setLastSubmitted(data);
+
+        localStorage.setItem(
+          "dietPlan",
+          JSON.stringify({
+            ...json.plan,
+            meals: processedMeals,
+            totals: json.totals || {
+              calories: Object.values(processedMeals).reduce((sum: number, meal) => sum + (meal?.calories || 0), 0),
+              protein: Object.values(processedMeals).reduce((sum: number, meal) => sum + (meal?.proteinG || 0), 0),
+              carbs: Object.values(processedMeals).reduce((sum: number, meal) => sum + (meal?.carbsG || 0), 0),
+              fat: Object.values(processedMeals).reduce((sum: number, meal) => sum + (meal?.fatG || 0), 0),
+            },
+          })
+        );
+
+        const workoutPlan = localStorage.getItem("workoutPlan");
         setHasWorkoutPlan(!!workoutPlan);
+        showToast("Your diet plan is ready.", "success");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Network error - probably ate all the bandwidth");
+      const message = err instanceof Error ? err.message : "Network error - please try again.";
+      setError(message);
+      showToast(message, "error");
     } finally {
       setLoading(false);
     }
@@ -160,598 +190,336 @@ export default function DietForm() {
 
   const processMealsData = (meals: Record<string, MealBlock | null>) => {
     const processed: Record<string, MealBlock | null> = {};
-    
-    // Check if we have 6-meal structure
-    const hasSixMeals = meals.SNACK1 || meals.SNACK2 || meals.SNACK3;
-    
-    if (hasSixMeals) {
-      // 6-meal structure
-      MEAL_ORDER.forEach(key => {
+
+    // True whenever the extended 5- or 6-meal structure was used, since both
+    // include at least SNACK1.
+    const hasExtendedMealPlan = meals.SNACK1 || meals.SNACK2 || meals.SNACK3;
+
+    if (hasExtendedMealPlan) {
+      MEAL_ORDER.forEach((key) => {
         if (meals[key] !== undefined) {
           processed[key] = meals[key];
         }
       });
     } else {
-      // 4-meal structure - map SNACK to SNACK1 for consistency
       processed.BREAKFAST = meals.BREAKFAST || null;
       processed.LUNCH = meals.LUNCH || null;
       processed.DINNER = meals.DINNER || null;
-      processed.SNACK1 = meals.SNACK || null; // Map SNACK to SNACK1
+      processed.SNACK1 = meals.SNACK || null;
       processed.SNACK2 = null;
       processed.SNACK3 = null;
     }
-    
+
     return processed;
   };
 
   const handleReset = () => {
-    reset();
+    reset(lastSubmitted ?? undefined);
     setResult(null);
     setError(null);
     setFormStep("form");
   };
 
-  const getMealTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      BREAKFAST: "bg-amber-500/20 text-amber-300 border-amber-500/30",
-      LUNCH: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
-      DINNER: "bg-purple-500/20 text-purple-300 border-purple-500/30",
-      SNACK: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-      SNACK1: "bg-blue-400/20 text-blue-200 border-blue-400/30",
-      SNACK2: "bg-blue-300/20 text-blue-100 border-blue-300/30",
-      SNACK3: "bg-blue-200/20 text-blue-50 border-blue-200/30"
-    };
-    return colors[type] || "bg-zinc-800/50 text-zinc-300 border-zinc-700";
-  };
-
-  // Get sorted meal keys for display
   const getSortedMealKeys = () => {
     if (!result?.meals) return [];
-    
     return Object.keys(result.meals)
       .sort((a, b) => MEAL_ORDER.indexOf(a) - MEAL_ORDER.indexOf(b))
-      .filter(key => result.meals[key] !== null);
+      .filter((key) => result.meals[key] !== null);
+  };
+
+  const handleDownload = async () => {
+    try {
+      await downloadDietPDF(showToast);
+    } catch {
+      // downloadDietPDF already reports its own errors via toast
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 py-8 px-4">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="max-w-6xl mx-auto relative z-10">
-        {/* Header */}
-        <div className="text-center mb-10 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-zinc-100 via-zinc-300 to-zinc-100 bg-clip-text text-transparent mb-3">
-            Diet Plan Generator
-          </h1>
-          <p className="text-zinc-400 text-lg">
-            Because guessing doesn't burn calories 🤷‍♂️
-          </p>
+    <div className="pb-16">
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/90 backdrop-blur-sm animate-fade-in">
+          <div className="mx-4 max-w-md text-center">
+            <div className="relative mx-auto mb-8 h-20 w-20">
+              <div className="h-20 w-20 rounded-full border-4 border-surface-raised" />
+              <div className="absolute top-0 left-0 h-20 w-20 animate-spin rounded-full border-4 border-transparent border-t-accent" />
+            </div>
+            <h3 className="mb-3 font-display text-xl font-semibold text-text">Building your diet plan...</h3>
+            <p className="italic text-text-muted">&ldquo;{loadingMessage}&rdquo;</p>
+          </div>
         </div>
+      )}
 
-        {/* Loading Overlay */}
-        {loading && (
-          <div className="fixed inset-0 bg-zinc-950/90 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-            <div className="text-center max-w-md mx-4">
-              {/* Spinner */}
-              <div className="relative mb-8">
-                <div className="w-24 h-24 border-4 border-zinc-800 rounded-full"></div>
-                <div className="w-24 h-24 border-4 border-transparent border-t-blue-500 rounded-full absolute top-0 left-0 animate-spin"></div>
-                <div className="w-16 h-16 border-4 border-transparent border-b-purple-500 rounded-full absolute top-4 left-4 animate-spin-reverse"></div>
-                <div className="w-8 h-8 border-4 border-transparent border-r-emerald-500 rounded-full absolute top-8 left-8 animate-spin"></div>
-              </div>
-              
-              <h3 className="text-xl font-semibold text-zinc-100 mb-4">
-                Cooking up your perfect diet...
-              </h3>
-              <p className="text-zinc-400 italic mb-2 transition-opacity duration-500">
-                "{loadingMessage}"
-              </p>
-              <div className="flex justify-center space-x-1 mt-4">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
-                    style={{ animationDelay: `${i * 0.2}s` }}
-                  ></div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+      {formStep === "form" && (
+        <div className="rounded-2xl border border-border bg-surface p-6 md:p-8 animate-slide-up">
+          <h2 className="mb-8 font-display text-2xl font-semibold text-text">Tell us about yourself</h2>
 
-        {/* Form Section */}
-        {formStep === "form" && (
-          <div className="bg-zinc-900/50 backdrop-blur-sm rounded-2xl border border-zinc-800/50 p-6 md:p-8 mb-8 shadow-2xl animate-slide-up">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-semibold text-zinc-100">
-                Tell Us About Your 🍽️
-              </h2>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-zinc-400">Ready to calculate</span>
-              </div>
-            </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <Field label="Age" htmlFor="age" hint="Years">
+                <input
+                  id="age"
+                  type="number"
+                  {...register("age", { valueAsNumber: true })}
+                  className={inputClass(!!errors.age)}
+                  placeholder="25"
+                  aria-invalid={!!errors.age}
+                />
+                <FieldError message={errors.age?.message} />
+              </Field>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-              {/* Personal Info Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Age */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="block text-sm font-medium text-zinc-300">
-                      Age
-                    </label>
-                    <span className="text-xs text-zinc-500">Years of wisdom</span>
-                  </div>
-                  <input
-                    type="number"
-                    {...register("age", { valueAsNumber: true })}
-                    className={`w-full px-4 py-3 bg-zinc-800/50 border ${errors.age ? 'border-red-500/50' : 'border-zinc-700/50'} rounded-xl text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:border-zinc-600`}
-                    placeholder="25"
-                  />
-                  {errors.age?.message && (
-                    <p className="text-sm text-red-400 animate-shake">
-                      ⚠️ {errors.age.message}
-                    </p>
-                  )}
-                </div>
+              <Field label="Gender" htmlFor="gender">
+                <select id="gender" {...register("gender")} className={inputClass(!!errors.gender)}>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
+                </select>
+                <FieldError message={errors.gender?.message} />
+              </Field>
 
-                {/* Gender */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-zinc-300">
-                    Gender
-                  </label>
-                  <select
-                    {...register("gender")}
-                    className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700/50 rounded-xl text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:border-zinc-600"
-                  >
-                    <option value="MALE">♂ Male</option>
-                    <option value="FEMALE">♀ Female</option>
-                    <option value="OTHER">⚧ Other</option>
-                  </select>
-                </div>
+              <Field label="Weight" htmlFor="weightKg" hint="kg">
+                <input
+                  id="weightKg"
+                  type="number"
+                  step="0.1"
+                  {...register("weightKg", { valueAsNumber: true })}
+                  className={inputClass(!!errors.weightKg)}
+                  placeholder="70"
+                  aria-invalid={!!errors.weightKg}
+                />
+                <FieldError message={errors.weightKg?.message} />
+              </Field>
 
-                {/* Weight */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="block text-sm font-medium text-zinc-300">
-                      Weight
-                    </label>
-                    <span className="text-xs text-zinc-500">kg</span>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="0.1"
-                      {...register("weightKg", { valueAsNumber: true })}
-                      className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700/50 rounded-xl text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:border-zinc-600"
-                      placeholder="70"
-                    />
-                    <div className="absolute right-3 top-3 text-zinc-500">
-                      ⚖️
-                    </div>
-                  </div>
-                </div>
+              <Field label="Height" htmlFor="heightCm" hint="cm">
+                <input
+                  id="heightCm"
+                  type="number"
+                  {...register("heightCm", { valueAsNumber: true })}
+                  className={inputClass(!!errors.heightCm)}
+                  placeholder="175"
+                  aria-invalid={!!errors.heightCm}
+                />
+                <FieldError message={errors.heightCm?.message} />
+              </Field>
 
-                {/* Height */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="block text-sm font-medium text-zinc-300">
-                      Height
-                    </label>
-                    <span className="text-xs text-zinc-500">cm</span>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      {...register("heightCm", { valueAsNumber: true })}
-                      className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700/50 rounded-xl text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:border-zinc-600"
-                      placeholder="175"
-                    />
-                    <div className="absolute right-3 top-3 text-zinc-500">
-                      📏
-                    </div>
-                  </div>
-                </div>
+              <Field label="Activity level" htmlFor="activityLevel">
+                <select id="activityLevel" {...register("activityLevel")} className={inputClass(!!errors.activityLevel)}>
+                  <option value="SEDENTARY">Sedentary</option>
+                  <option value="LIGHT">Light</option>
+                  <option value="MODERATE">Moderate</option>
+                  <option value="VERY_ACTIVE">Very active</option>
+                  <option value="SUPER_ACTIVE">Super active</option>
+                </select>
+                <FieldError message={errors.activityLevel?.message} />
+              </Field>
 
-                {/* Activity Level */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="block text-sm font-medium text-zinc-300">
-                      Activity Level
-                    </label>
-                    <span className="text-xs text-zinc-500">Be honest! 😉</span>
-                  </div>
-                  <select
-                    {...register("activityLevel")}
-                    className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700/50 rounded-xl text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:border-zinc-600"
-                  >
-                    <option value="SEDENTARY">🥔 Sedentary</option>
-                    <option value="LIGHT">🚶‍♂️ Light</option>
-                    <option value="MODERATE">🏃‍♂️ Moderate</option>
-                    <option value="VERY_ACTIVE">💪 Very Active</option>
-                    <option value="SUPER_ACTIVE">🔥 Super Active</option>
-                  </select>
-                </div>
+              <Field label="Primary goal" htmlFor="goal">
+                <select id="goal" {...register("goal")} className={inputClass(!!errors.goal)}>
+                  <option value="WEIGHT_LOSS">Weight loss</option>
+                  <option value="MUSCLE_GAIN">Muscle gain</option>
+                  <option value="MAINTENANCE">Maintenance</option>
+                </select>
+                <FieldError message={errors.goal?.message} />
+              </Field>
 
-                {/* Primary Goal */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-zinc-300">
-                    Primary Goal
-                  </label>
-                  <select
-                    {...register("goal")}
-                    className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700/50 rounded-xl text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:border-zinc-600"
-                  >
-                    <option value="WEIGHT_LOSS">🔥 Weight Loss</option>
-                    <option value="MUSCLE_GAIN">💪 Muscle Gain</option>
-                    <option value="MAINTENANCE">⚖️ Maintenance</option>
-                    <option value="ENDURANCE">🏃‍♂️ Endurance</option>
-                  </select>
-                </div>
-
-                {/* Diet Preference */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-zinc-300">
-                    Diet Preference
-                  </label>
-                  <select
-                    {...register("dietPreference")}
-                    className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700/50 rounded-xl text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 hover:border-zinc-600"
-                  >
-                    <option value="VEG">🥦 Vegetarian</option>
-                    <option value="NON_VEG">🍗 Non-Vegetarian</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 border-t border-zinc-800/50">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`px-8 py-3.5 font-medium rounded-xl transition-all duration-300 flex-1 sm:flex-none ${isValid ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'bg-zinc-800 cursor-not-allowed'} text-white shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    {loading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        Cooking...
-                      </>
-                    ) : (
-                      <>
-                        🍳 Generate Diet Plan
-                      </>
-                    )}
-                  </span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="px-8 py-3.5 bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 font-medium rounded-xl border border-zinc-700/50 transition-all duration-300 hover:border-zinc-600 hover:scale-[1.02] active:scale-[0.98] flex-1 sm:flex-none"
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    ↺ Reset All
-                  </span>
-                </button>
-              </div>
-
-              {/* Form Status Indicator */}
-              <div className="pt-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-500">
-                    {isValid ? "✓ All set! Ready to cook!" : "Fill in all the details above..."}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${isValid ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-700'}`}></div>
-                    <span className="text-zinc-400">Form status</span>
-                  </div>
-                </div>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/30 rounded-2xl p-6 mb-8 animate-shake">
-            <div className="flex items-start gap-3">
-              <div className="text-2xl">😬</div>
-              <div>
-                <p className="text-red-400 font-medium mb-1">
-                  Oops! Something went wrong...
-                </p>
-                <p className="text-red-300/80 text-sm">
-                  {error}
-                </p>
-                <button
-                  onClick={() => setError(null)}
-                  className="mt-3 text-sm text-red-400 hover:text-red-300 transition-colors"
-                >
-                  Dismiss this delicious disaster →
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Results Section */}
-        {result && formStep === "result" && (
-          <div className="space-y-8 animate-slide-up">
-            {/* Results Header */}
-            <div className="bg-zinc-900/50 backdrop-blur-sm rounded-2xl border border-zinc-800/50 p-6 md:p-8 shadow-2xl">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-                <div>
-                  <h3 className="text-2xl font-semibold text-zinc-100 mb-2">
-                    Your Personalized Diet Plan 🎉
-                  </h3>
-                  <p className="text-zinc-400">
-                    {Object.values(result.meals).filter(Boolean).length} meals • Made with ❤️ (and lots of math)
-                  </p>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <button
-                    onClick={() => setFormStep("form")}
-                    className="px-6 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 font-medium rounded-xl border border-zinc-700/50 transition-all duration-300 hover:border-zinc-600 w-full sm:w-auto"
-                  >
-                    ← Edit Details
-                  </button>
-                  
-                  <button
-                    onClick={() => downloadDietPDF()}
-                    className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto"
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      📥 Download PDF
-                      {hasWorkoutPlan && (
-                        <span className="text-xs bg-emerald-700 px-2 py-1 rounded-full">
-                          + Workout Plan
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Summary Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 border border-zinc-700/30 rounded-xl p-5 hover:border-zinc-600/50 transition-all duration-300 hover:scale-[1.02] group">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-2xl">🔥</div>
-                    <div className="text-xs text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded-full">
-                      Daily
-                    </div>
-                  </div>
-                  <p className="text-sm text-zinc-400 mb-1">Calories</p>
-                  <p className="text-2xl font-bold text-zinc-100">
-                    {result.plan.totalCalories.min}–{result.plan.totalCalories.max}
-                  </p>
-                  <p className="text-xs text-zinc-500 mt-2">
-                    Total: {result.totals?.calories || 0} kcal
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 border border-zinc-700/30 rounded-xl p-5 hover:border-zinc-600/50 transition-all duration-300 hover:scale-[1.02] group">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-2xl">🍽️</div>
-                    <div className="text-xs text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded-full">
-                      Per Meal
-                    </div>
-                  </div>
-                  <p className="text-sm text-zinc-400 mb-1">Calories</p>
-                  <p className="text-2xl font-bold text-zinc-100">
-                    {result.plan.perMeal.calories.min}–
-                    {result.plan.perMeal.calories.max}
-                  </p>
-                  <p className="text-xs text-zinc-500 mt-2">
-                    {Object.values(result.meals).filter(Boolean).length} meals
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 border border-zinc-700/30 rounded-xl p-5 hover:border-zinc-600/50 transition-all duration-300 hover:scale-[1.02] group">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-2xl">💪</div>
-                    <div className="text-xs text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded-full">
-                      Protein
-                    </div>
-                  </div>
-                  <p className="text-sm text-zinc-400 mb-1">Daily Target</p>
-                  <p className="text-2xl font-bold text-zinc-100">
-                    {result.plan.proteinG.min}–{result.plan.proteinG.max}g
-                  </p>
-                  <p className="text-xs text-zinc-500 mt-2">
-                    Total: {result.totals?.protein || 0}g
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 border border-zinc-700/30 rounded-xl p-5 hover:border-zinc-600/50 transition-all duration-300 hover:scale-[1.02] group">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-2xl">⚡</div>
-                    <div className="text-xs text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded-full">
-                      Carbs
-                    </div>
-                  </div>
-                  <p className="text-sm text-zinc-400 mb-1">Daily Target</p>
-                  <p className="text-2xl font-bold text-zinc-100">
-                    {result.plan.carbsG.min}–{result.plan.carbsG.max}g
-                  </p>
-                  <p className="text-xs text-zinc-500 mt-2">
-                    Total: {result.totals?.carbs || 0}g
-                  </p>
-                </div>
-              </div>
-
-              {/* Meal Plan */}
-              <div className="mt-10">
-                <div className="flex items-center justify-between mb-6">
-                  <h4 className="text-xl font-semibold text-zinc-100">
-                    Today's Menu 🍴 ({getSortedMealKeys().length} meals)
-                  </h4>
-                  <div className="text-sm text-zinc-500 bg-zinc-800/50 px-3 py-1.5 rounded-full">
-                    Ready to eat!
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {getSortedMealKeys().map((slot) => {
-                    const meal = result.meals[slot];
-                    if (!meal) return null;
-                    
-                    return (
-                      <div
-                        key={slot}
-                        className={`rounded-xl border p-5 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg ${getMealTypeColor(slot)}`}
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <span className={`text-sm font-medium px-3 py-1 rounded-full ${getMealTypeColor(slot)}`}>
-                            {MEAL_LABELS[slot] || slot}
-                          </span>
-                          <span className="text-xs text-zinc-400">
-                            {meal.goal === 'WEIGHT_LOSS' ? '🔥' : 
-                             meal.goal === 'MUSCLE_GAIN' ? '💪' : '⚖️'}
-                          </span>
-                        </div>
-
-                        <h5 className="text-lg font-semibold text-zinc-100 mb-3">
-                          {meal.title}
-                        </h5>
-
-                        {/* Nutrition Badges */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          <div className="flex items-center gap-1.5 bg-zinc-800/50 px-3 py-1.5 rounded-full">
-                            <span className="text-zinc-400 text-xs">🔥</span>
-                            <span className="text-sm text-zinc-200">{meal.calories}</span>
-                            <span className="text-xs text-zinc-500">kcal</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 bg-zinc-800/50 px-3 py-1.5 rounded-full">
-                            <span className="text-zinc-400 text-xs">💪</span>
-                            <span className="text-sm text-zinc-200">{meal.proteinG}g</span>
-                            <span className="text-xs text-zinc-500">protein</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 bg-zinc-800/50 px-3 py-1.5 rounded-full">
-                            <span className="text-zinc-400 text-xs">⚡</span>
-                            <span className="text-sm text-zinc-200">{meal.carbsG}g</span>
-                            <span className="text-xs text-zinc-500">carbs</span>
-                          </div>
-                        </div>
-
-                        {/* Ingredients */}
-                        <div className="mt-4 pt-4 border-t border-zinc-800/50">
-                          <p className="text-xs text-zinc-400 mb-2">🥄 Ingredients:</p>
-                          <p className="text-sm text-zinc-300 leading-relaxed">
-                            {meal.ingredients}
-                          </p>
-                        </div>
-
-                        {/* Diet Type Badge */}
-                        <div className="mt-4">
-                          <span className={`text-xs px-2 py-1 rounded-full ${meal.dietType === 'VEG' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}`}>
-                            {meal.dietType === 'VEG' ? '🥦 Vegetarian' : '🍗 Non-Veg'}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Pro Tips */}
-                <div className="mt-8 pt-6 border-t border-zinc-800/50">
-                  <div className="flex items-start gap-3 bg-zinc-800/30 rounded-xl p-4">
-                    <div className="text-2xl">💡</div>
-                    <div>
-                      <p className="text-zinc-300 font-medium mb-1">Pro Tip!</p>
-                      <p className="text-zinc-400 text-sm">
-                        Drink plenty of water, don't skip meals, and remember: consistency beats perfection every time.
-                        {result.plan.totalCalories.max > 3000 && " (You might want to split those larger portions!)"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <Field label="Diet preference" htmlFor="dietPreference">
+                <select id="dietPreference" {...register("dietPreference")} className={inputClass(!!errors.dietPreference)}>
+                  <option value="VEG">Vegetarian</option>
+                  <option value="NON_VEG">Non-vegetarian</option>
+                </select>
+                <FieldError message={errors.dietPreference?.message} />
+              </Field>
             </div>
 
-            {/* Action Footer */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-              <p className="text-zinc-500 text-sm">
-                Plan ID: <span className="text-zinc-400 font-mono">{result.planId}</span> • 
-                Generated just now • Ready to transform! 🚀
-              </p>
+            <div className="flex flex-col items-center gap-4 border-t border-border pt-6 sm:flex-row">
               <button
-                onClick={handleReset}
-                className="text-sm text-zinc-400 hover:text-zinc-300 transition-colors flex items-center gap-1"
+                type="submit"
+                disabled={loading}
+                className="flex-1 rounded-xl bg-accent px-8 py-3.5 font-medium text-ink transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
               >
-                🍳 Generate another plan
+                {loading ? "Generating..." : "Generate diet plan"}
+              </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border px-8 py-3.5 font-medium text-text-muted transition-colors hover:border-text-muted hover:text-text sm:flex-none"
+              >
+                <FiRefreshCw aria-hidden="true" /> Reset
+              </button>
+            </div>
+
+            <p className="text-sm text-text-muted">
+              {isValid ? "All set - ready to generate." : "Fill in the details above to continue."}
+            </p>
+          </form>
+        </div>
+      )}
+
+      {error && (
+        <div className="mt-6 rounded-2xl border border-danger/30 bg-danger/10 p-6">
+          <div className="flex items-start gap-3">
+            <FiAlertCircle className="mt-0.5 flex-shrink-0 text-xl text-danger" aria-hidden="true" />
+            <div>
+              <p className="mb-1 font-medium text-text">Something went wrong</p>
+              <p className="text-sm text-text-muted">{error}</p>
+              <button onClick={() => setError(null)} className="mt-3 text-sm text-danger hover:underline">
+                Dismiss
               </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Add these styles for animations */}
-      <style jsx global>{`
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes slide-up {
-          from { 
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to { 
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-          20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-        
-        @keyframes spin-reverse {
-          from { transform: rotate(360deg); }
-          to { transform: rotate(0deg); }
-        }
-        
-        .animate-fade-in {
-          animation: fade-in 0.5s ease-out;
-        }
-        
-        .animate-slide-up {
-          animation: slide-up 0.5s ease-out;
-        }
-        
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-        
-        .animate-spin {
-          animation: spin 1s linear infinite;
-        }
-        
-        .animate-spin-reverse {
-          animation: spin-reverse 1s linear infinite;
-        }
-        
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        
-        /* Smooth transitions */
-        * {
-          transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-      `}</style>
+      {result && formStep === "result" && (
+        <div className="space-y-8 animate-slide-up">
+          <div className="rounded-2xl border border-border bg-surface p-6 md:p-8">
+            <div className="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-center">
+              <div>
+                <h3 className="mb-2 font-display text-2xl font-semibold text-text">Your diet plan</h3>
+                <p className="text-text-muted">{Object.values(result.meals).filter(Boolean).length} meals a day</p>
+              </div>
+
+              <div className="flex flex-col items-center gap-3 sm:flex-row">
+                <button
+                  onClick={() => setFormStep("form")}
+                  className="w-full rounded-xl border border-border px-6 py-3 font-medium text-text-muted transition-colors hover:border-text-muted hover:text-text sm:w-auto"
+                >
+                  Edit details
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-secondary px-6 py-3 font-medium text-ink transition-colors hover:brightness-95 sm:w-auto"
+                >
+                  <FiDownload aria-hidden="true" />
+                  Download PDF
+                  {hasWorkoutPlan && <span className="rounded-full bg-ink/20 px-2 py-0.5 text-xs">+ Workout</span>}
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <SummaryCard icon={<FiZap aria-hidden="true" />} label="Calories" value={`${result.plan.totalCalories.min}-${result.plan.totalCalories.max}`} sub={`Total: ${result.totals?.calories || 0} kcal`} />
+              <SummaryCard icon={<FiTarget aria-hidden="true" />} label="Per meal" value={`${result.plan.perMeal.calories.min}-${result.plan.perMeal.calories.max}`} sub={`${Object.values(result.meals).filter(Boolean).length} meals`} />
+              <SummaryCard icon={<FiTrendingUp aria-hidden="true" />} label="Protein" value={`${result.plan.proteinG.min}-${result.plan.proteinG.max}g`} sub={`Total: ${result.totals?.protein || 0}g`} />
+              <SummaryCard icon={<FiDroplet aria-hidden="true" />} label="Carbs" value={`${result.plan.carbsG.min}-${result.plan.carbsG.max}g`} sub={`Total: ${result.totals?.carbs || 0}g`} />
+            </div>
+
+            <div className="mt-10">
+              <h4 className="mb-6 font-display text-xl font-semibold text-text">Today&rsquo;s menu</h4>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {getSortedMealKeys().map((slot) => {
+                  const meal = result.meals[slot];
+                  if (!meal) return null;
+                  const Icon = MEAL_ICONS[slot] || FiCoffee;
+
+                  return (
+                    <div key={slot} className="rounded-xl border border-border bg-ink/40 p-5">
+                      <div className="mb-4 flex items-center justify-between">
+                        <span className="flex items-center gap-2 rounded-full bg-surface-raised px-3 py-1 text-sm font-medium text-text">
+                          <Icon aria-hidden="true" /> {MEAL_LABELS[slot] || slot}
+                        </span>
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs ${
+                            meal.dietType === "VEG" ? "bg-secondary/15 text-secondary" : "bg-accent/15 text-accent"
+                          }`}
+                        >
+                          {meal.dietType === "VEG" ? "Vegetarian" : "Non-veg"}
+                        </span>
+                      </div>
+
+                      <h5 className="mb-3 text-lg font-semibold text-text">{meal.title}</h5>
+
+                      <div className="mb-4 flex flex-wrap gap-2 text-sm">
+                        <span className="rounded-full bg-surface-raised px-3 py-1 text-text">{meal.calories} kcal</span>
+                        <span className="rounded-full bg-surface-raised px-3 py-1 text-text">{meal.proteinG}g protein</span>
+                        <span className="rounded-full bg-surface-raised px-3 py-1 text-text">{meal.carbsG}g carbs</span>
+                      </div>
+
+                      <div className="border-t border-border pt-4 text-sm leading-relaxed text-text-muted">
+                        {meal.ingredients}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-8 flex items-start gap-3 rounded-xl border border-border bg-ink/40 p-4">
+                <FiInfo className="mt-0.5 flex-shrink-0 text-accent" aria-hidden="true" />
+                <p className="text-sm text-text-muted">
+                  Drink plenty of water, don&rsquo;t skip meals, and remember: consistency beats perfection.
+                  {result.plan.totalCalories.max > 3000 && " You might want to split those larger portions."}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+            <p className="text-sm text-text-muted">
+              Plan ID: <span className="font-mono text-text">{result.planId}</span>
+            </p>
+            <button onClick={handleReset} className="flex items-center gap-1 text-sm text-text-muted hover:text-text">
+              <FiRefreshCw aria-hidden="true" /> Generate another plan
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Field({
+  label,
+  htmlFor,
+  hint,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label htmlFor={htmlFor} className="block text-sm font-medium text-text-muted">
+          {label}
+        </label>
+        {hint && <span className="text-xs text-text-muted">{hint}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p className="flex items-center gap-1 text-sm text-danger">
+      <FiAlertCircle aria-hidden="true" /> {message}
+    </p>
+  );
+}
+
+function SummaryCard({
+  icon,
+  label,
+  value,
+  sub,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sub: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-ink/40 p-5">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-lg text-accent">{icon}</span>
+      </div>
+      <p className="mb-1 text-sm text-text-muted">{label}</p>
+      <p className="text-2xl font-semibold text-text">{value}</p>
+      <p className="mt-2 text-xs text-text-muted">{sub}</p>
     </div>
   );
 }

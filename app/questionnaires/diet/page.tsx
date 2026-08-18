@@ -6,20 +6,16 @@ export const metadata = {
 
 export default function DietPage() {
   return (
-    <main className="min-h-screen bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-zinc-100 mb-3">
-            Diet Questionnaire
-          </h1>
-          <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
-            Fill out the form below to receive a personalized diet plan tailored to your goals and preferences.
-          </p>
-        </div>
-
-        <DietForm />
+    <main className="py-8">
+      <div className="mb-10 max-w-2xl">
+        <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-accent">Diet plan</p>
+        <h1 className="font-display text-4xl font-semibold text-text">A few details, then your plan</h1>
+        <p className="mt-3 text-lg text-text-muted">
+          Fill out the form below to get a personalized diet plan tailored to your goals and preferences.
+        </p>
       </div>
+
+      <DietForm />
     </main>
   );
 }

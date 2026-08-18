@@ -81,7 +81,7 @@ model DietResponse {
   foodRestrictions String?
   createdAt        DateTime      @default(now())
 
-  user User? @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 model WorkoutResponse {
@@ -95,7 +95,7 @@ model WorkoutResponse {
   workoutDays  String
   createdAt    DateTime     @default(now())
 
-  user User? @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 ////////////////////////
@@ -141,7 +141,7 @@ model Plan {
   payload     Json
   generatedAt DateTime @default(now())
 
-  user User? @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 ////////////////////////

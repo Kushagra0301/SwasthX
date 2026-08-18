@@ -1,62 +1,48 @@
-// components/Navbar.tsx
 "use client";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { FaAppleAlt, FaDumbbell, FaHome, FaFire, FaBars, FaTimes } from "react-icons/fa";
-import DisclaimerModal from "@/components/DisclaimerModal"; // Adjust path as needed
+import { usePathname } from "next/navigation";
+import { FiHome, FiHeart, FiActivity, FiMenu, FiX } from "react-icons/fi";
+import { useDisclaimer } from "@/components/DisclaimerProvider";
+import { useScrollLock } from "@/lib/useScrollLock";
+import TextRoll from "@/components/TextRoll";
+import MagneticButton from "@/components/MagneticButton";
+
+const navItems = [
+  { href: "/", label: "Home", icon: FiHome },
+  { href: "/questionnaires/diet", label: "Diet", icon: FiHeart },
+  { href: "/questionnaires/workout", label: "Workout", icon: FiActivity },
+];
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showDisclaimer, setShowDisclaimer] = useState(false);
-  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
   const pathname = usePathname();
-  const router = useRouter();
+  const { navigateWithDisclaimer } = useDisclaimer();
 
-  // Handle scroll effect
+  useScrollLock(isMobileMenuOpen);
+
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
-    if (showDisclaimer || isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
+    if (!isMobileMenuOpen) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsMobileMenuOpen(false);
     };
-  }, [showDisclaimer, isMobileMenuOpen]);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isMobileMenuOpen]);
 
-  const handleLinkClick = (url: string) => {
-    setRedirectUrl(url);
-    setShowDisclaimer(true);
-  };
-
-  const handleAcceptDisclaimer = () => {
-    setShowDisclaimer(false);
-    if (redirectUrl) {
-      router.push(redirectUrl);
-    }
-  };
-
-  const navItems = [
-    { href: "/", label: "Home", icon: <FaHome /> },
-    { href: "/questionnaires/diet", label: "Diet", icon: <FaAppleAlt /> },
-    { href: "/questionnaires/workout", label: "Workout", icon: <FaDumbbell /> },
-  ];
+  const handleLinkClick = (url: string) => navigateWithDisclaimer(url);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -66,257 +52,115 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? "bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/50 py-3 shadow-2xl"
-            : "bg-gradient-to-b from-zinc-950/90 to-transparent backdrop-blur-md py-4"
+            ? "border-b border-border bg-ink/95 py-3 backdrop-blur-xl"
+            : "bg-ink/80 py-4 backdrop-blur-md"
         }`}
       >
-        <nav className="max-w-6xl mx-auto px-4 md:px-6 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="group flex items-center gap-3">
+        <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 md:px-6">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent font-display text-sm font-bold text-ink">
+              S
+            </span>
             <div className="hidden md:block">
-              <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent animate-gradient">
-                SwasthX
-              </h1>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Transform Your Health</p>
+              <p className="font-display text-lg font-semibold leading-none text-text">SwasthX</p>
+              <p className="text-[10px] uppercase tracking-wider text-text-muted">Transform your health</p>
             </div>
           </Link>
-          {/* Desktop Navigation - FIXED CLICKABLE AREA */}
-          <div className="hidden md:flex items-center gap-2">
+
+          <div className="hidden items-center gap-1 md:flex">
             {navItems.map((item) => {
               const active = isActive(item.href);
-              const needsDisclaimer = item.href !== "/";
-              return (
-                <div key={item.href} className="relative">
-                  {needsDisclaimer ? (
-                    <button
-                      onClick={() => handleLinkClick(item.href)}
-                      className={`group flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 ${
-                        active
-                          ? "text-white bg-gradient-to-r from-blue-500/10 to-purple-500/10 shadow-inner"
-                          : "text-zinc-400 hover:text-white hover:bg-zinc-800/30"
-                      }`}
-                      style={{ position: "relative", zIndex: 10 }}
-                    >
-                      <span
-                        className={`text-sm ${active ? "text-blue-400" : "text-zinc-500 group-hover:text-blue-400"}`}
-                      >
-                        {item.icon}
-                      </span>
-                      <span className="font-medium text-sm">{item.label}</span>
-                    </button>
-                  ) : (
-                    <Link
-                      href={item.href}
-                      className={`group flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-300 ${
-                        active
-                          ? "text-white bg-gradient-to-r from-blue-500/10 to-purple-500/10 shadow-inner"
-                          : "text-zinc-400 hover:text-white hover:bg-zinc-800/30"
-                      }`}
-                      style={{ position: "relative", zIndex: 10 }}
-                    >
-                      <span
-                        className={`text-sm ${active ? "text-blue-400" : "text-zinc-500 group-hover:text-blue-400"}`}
-                      >
-                        {item.icon}
-                      </span>
-                      <span className="font-medium text-sm">{item.label}</span>
-                    </Link>
-                  )}
-
-                  {/* Active indicator - BELOW the link */}
-                  {active && (
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
-                  )}
-                </div>
+              const Icon = item.icon;
+              const className = `flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                active ? "text-text bg-surface-raised" : "text-text-muted hover:bg-surface hover:text-text"
+              }`;
+              return item.href === "/" ? (
+                <Link key={item.href} href={item.href} className={className}>
+                  <Icon aria-hidden="true" />
+                  <TextRoll>{item.label}</TextRoll>
+                </Link>
+              ) : (
+                <button key={item.href} onClick={() => handleLinkClick(item.href)} className={className}>
+                  <Icon aria-hidden="true" />
+                  <TextRoll>{item.label}</TextRoll>
+                </button>
               );
             })}
 
-            {/* CTA Button - FIXED */}
-            <div className="relative ml-2">
+            <MagneticButton className="ml-2">
               <button
                 onClick={() => handleLinkClick("/questionnaires/diet")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-sm relative overflow-hidden group"
+                className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-ink transition-colors hover:bg-accent-hover"
               >
-                <FaFire className="text-xs" />
-                <span>Get Started</span>
-                <span className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform group-hover:translate-x-1">
-                  →
-                </span>
-
-                {/* Shine effect - fixed to not interfere with click */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                Get started
               </button>
-            </div>
+            </MagneticButton>
           </div>
-          {/* Mobile Menu Button */}
+
           <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2.5 rounded-lg bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 transition-all duration-300 active:scale-95"
-            aria-label="Toggle menu"
+            onClick={() => setIsMobileMenuOpen((open) => !open)}
+            className="rounded-lg border border-border p-2.5 text-text md:hidden"
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileMenuOpen}
           >
-            {isMobileMenuOpen ? (
-              <FaTimes className="text-xl text-zinc-300" />
-            ) : (
-              <FaBars className="text-xl text-zinc-300" />
-            )}
+            {isMobileMenuOpen ? <FiX className="text-xl" /> : <FiMenu className="text-xl" />}
           </button>
         </nav>
       </header>
-      {/* Mobile Menu Overlay - FIXED CLICKABILITY */}
+
       <div
-        className={`fixed inset-0 z-40 md:hidden transition-all duration-500 ease-in-out ${
-          isMobileMenuOpen
-            ? "bg-zinc-950/95 backdrop-blur-xl opacity-100 visible"
-            : "bg-transparent backdrop-blur-0 opacity-0 invisible"
+        className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${
+          isMobileMenuOpen ? "visible opacity-100" : "invisible opacity-0"
         }`}
-        style={{ top: "80px" }}
-        onClick={() => setIsMobileMenuOpen(false)}
+        style={{ top: "72px" }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile navigation"
       >
-        <div className="px-4 py-6 h-full overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-          <div className="max-w-md mx-auto bg-gradient-to-br from-zinc-900/80 to-zinc-800/50 rounded-2xl border border-zinc-800/50 backdrop-blur-xl p-4">
-            {navItems.map((item, index) => {
+        <div className="absolute inset-0 bg-ink/95 backdrop-blur-xl" onClick={() => setIsMobileMenuOpen(false)} />
+        <div className="relative h-full overflow-y-auto px-4 py-6" onClick={(e) => e.stopPropagation()}>
+          <div className="mx-auto max-w-md rounded-2xl border border-border bg-surface p-4">
+            {navItems.map((item) => {
               const active = isActive(item.href);
-              const needsDisclaimer = item.href !== "/";
-              return needsDisclaimer ? (
-                <button
-                  key={item.href}
-                  onClick={() => handleLinkClick(item.href)}
-                  className={`flex items-center gap-3 p-4 rounded-xl mb-2 transition-all duration-300 active:scale-95 ${
-                    active
-                      ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white border border-blue-500/30"
-                      : "bg-zinc-800/30 text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
-                  }`}
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                    display: "block",
-                  }}
-                >
-                  <div className="flex items-center">
-                    <div
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${
-                        active ? "bg-gradient-to-br from-blue-500 to-purple-500" : "bg-zinc-700/50"
-                      }`}
-                    >
-                      <span className={`text-lg ${active ? "text-white" : "text-zinc-400"}`}>
-                        {item.icon}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{item.label}</p>
-                      <p className="text-xs text-zinc-500">
-                        {item.href === "/" && "Home page"}
-                        {item.href === "/questionnaires/diet" && "Create diet plan"}
-                        {item.href === "/questionnaires/workout" && "Create workout plan"}
-                      </p>
-                    </div>
-                    {active && (
-                      <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse ml-2"></div>
-                    )}
-                  </div>
-                </button>
-              ) : (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 p-4 rounded-xl mb-2 transition-all duration-300 active:scale-95 ${
-                    active
-                      ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white border border-blue-500/30"
-                      : "bg-zinc-800/30 text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
-                  }`}
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                    display: "block",
-                  }}
-                >
-                  <div className="flex items-center">
-                    <div
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${
-                        active ? "bg-gradient-to-br from-blue-500 to-purple-500" : "bg-zinc-700/50"
-                      }`}
-                    >
-                      <span className={`text-lg ${active ? "text-white" : "text-zinc-400"}`}>
-                        {item.icon}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{item.label}</p>
-                      <p className="text-xs text-zinc-500">
-                        {item.href === "/" && "Home page"}
-                        {item.href === "/questionnaires/diet" && "Create diet plan"}
-                        {item.href === "/questionnaires/workout" && "Create workout plan"}
-                      </p>
-                    </div>
-                    {active && (
-                      <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse ml-2"></div>
-                    )}
-                  </div>
+              const Icon = item.icon;
+              const className = `mb-2 flex items-center gap-3 rounded-xl p-4 transition-colors ${
+                active ? "border border-accent/30 bg-accent/10 text-text" : "text-text-muted hover:bg-surface-raised hover:text-text"
+              }`;
+              const content = (
+                <>
+                  <span className={`flex h-10 w-10 items-center justify-center rounded-lg ${active ? "bg-accent text-ink" : "bg-surface-raised text-text-muted"}`}>
+                    <Icon aria-hidden="true" />
+                  </span>
+                  <span className="font-medium">{item.label}</span>
+                </>
+              );
+              return item.href === "/" ? (
+                <Link key={item.href} href={item.href} className={className}>
+                  {content}
                 </Link>
+              ) : (
+                <button key={item.href} onClick={() => handleLinkClick(item.href)} className={`w-full text-left ${className}`}>
+                  {content}
+                </button>
               );
             })}
 
-            {/* Mobile CTA - FIXED */}
-            <div className="mt-6 pt-6 border-t border-zinc-800/50">
+            <div className="mt-4 border-t border-border pt-4">
               <button
                 onClick={() => handleLinkClick("/questionnaires/diet")}
-                className="block w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold text-center flex items-center justify-center gap-2 active:scale-95"
+                className="block w-full rounded-xl bg-accent py-3.5 text-center font-semibold text-ink transition-colors hover:bg-accent-hover"
               >
-                <FaFire />
-                <span>Start Your Journey</span>
+                Start your journey
               </button>
-              <p className="text-xs text-center text-zinc-500 mt-3">Free • Instant • PDF Downloadable</p>
+              <p className="mt-3 text-center text-xs text-text-muted">Free &bull; Instant &bull; PDF downloadable</p>
             </div>
           </div>
         </div>
       </div>
-      {/* Spacer to prevent content from hiding under fixed navbar */}
-      <div className="h-20 md:h-24"></div>
-      {/* Custom animations - SIMPLIFIED */}
-      <style jsx global>{`
-        @keyframes gradient {
-          0%,
-          100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
 
-        .animate-gradient {
-          background-size: 200% 200%;
-          animation: gradient 3s ease infinite;
-        }
-
-        /* Ensure buttons are properly clickable */
-        a,
-        button {
-          cursor: pointer;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Prevent text selection on buttons */
-        .active\\:scale-95:active {
-          transform: scale(0.95);
-        }
-
-        /* Improve touch targets on mobile */
-        @media (max-width: 768px) {
-          a,
-          button {
-            min-height: 44px;
-            min-width: 44px;
-          }
-        }
-      `}</style>
-
-      {/* Disclaimer Modal */}
-      <DisclaimerModal 
-        isOpen={showDisclaimer} 
-        onClose={() => setShowDisclaimer(false)} 
-        onAccept={handleAcceptDisclaimer} 
-      />
+      <div className="h-20 md:h-24" />
     </>
   );
 }

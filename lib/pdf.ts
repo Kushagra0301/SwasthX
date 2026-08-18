@@ -1,98 +1,107 @@
 import jsPDF from "jspdf";
 
-// Main function that checks what to download
-export async function downloadPDF() {
+type ToastFn = (message: string, kind?: "success" | "error" | "info") => void;
+
+// PDF generation runs client-side and outside React, so callers pass their
+// showToast handle in rather than this module depending on the Toast context.
+export async function downloadPDF(notify: ToastFn) {
   try {
     const currentPage = window.location.pathname;
-    
-    if (currentPage.includes('/diet') || currentPage.includes('/diet-')) {
-      await downloadDietPDF();
-    } else if (currentPage.includes('/workout') || currentPage.includes('/workout-')) {
-      await downloadWorkoutPDF();
+
+    if (currentPage.includes('/diet')) {
+      await downloadDietPDF(notify);
+    } else if (currentPage.includes('/workout')) {
+      await downloadWorkoutPDF(notify);
     } else {
       const dietPlanStr = localStorage.getItem('dietPlan');
       const workoutPlanStr = localStorage.getItem('workoutPlan');
-      
+
       if (dietPlanStr && workoutPlanStr) {
-        await downloadCombinedPDF();
+        await downloadCombinedPDF(notify);
       } else if (dietPlanStr) {
-        await downloadDietPDF();
+        await downloadDietPDF(notify);
       } else if (workoutPlanStr) {
-        await downloadWorkoutPDF();
+        await downloadWorkoutPDF(notify);
       } else {
-        alert("Please generate a plan first.");
+        notify("Please generate a plan first.", "error");
       }
     }
   } catch (error) {
     console.error("PDF generation error:", error);
-    alert("Failed to generate PDF. Please try again.");
+    notify("Failed to generate PDF. Please try again.", "error");
   }
 }
 
-// Separate function for diet-only PDF
-export async function downloadDietPDF() {
+export async function downloadDietPDF(notify?: ToastFn) {
   const dietPlanStr = localStorage.getItem('dietPlan');
-  
+
   if (!dietPlanStr) {
-    alert("Please generate a diet plan first.");
+    notify?.("Please generate a diet plan first.", "error");
     return;
   }
 
   const dietPlan = JSON.parse(dietPlanStr);
   const pdf = new jsPDF("p", "mm", "a4");
-  
-  addDietCoverPage(pdf);
+
+  addCoverPage(pdf, { title: "Your Personalized\nDiet Plan", summary: "Personalized nutrition plan" });
   pdf.addPage();
   addDietPlanContent(pdf, dietPlan);
-  
+
   pdf.save("SwasthX-Diet-Plan.pdf");
+  notify?.("Diet plan PDF downloaded.", "success");
 }
 
-// Separate function for workout-only PDF
-export async function downloadWorkoutPDF() {
+export async function downloadWorkoutPDF(notify?: ToastFn) {
   const workoutPlanStr = localStorage.getItem('workoutPlan');
-  
+
   if (!workoutPlanStr) {
-    alert("Please generate a workout plan first.");
+    notify?.("Please generate a workout plan first.", "error");
     return;
   }
 
   const workoutPlan = JSON.parse(workoutPlanStr);
   const pdf = new jsPDF("p", "mm", "a4");
-  
-  addWorkoutCoverPage(pdf);
+
+  addCoverPage(pdf, { title: "Your Personalized\nWorkout Plan", summary: "Custom workout schedule" });
   pdf.addPage();
   addWorkoutPlanContent(pdf, workoutPlan);
-  
+
   pdf.save("SwasthX-Workout-Plan.pdf");
+  notify?.("Workout plan PDF downloaded.", "success");
 }
 
-// Combined function (if needed)
-async function downloadCombinedPDF() {
+async function downloadCombinedPDF(notify?: ToastFn) {
   const dietPlanStr = localStorage.getItem('dietPlan');
   const workoutPlanStr = localStorage.getItem('workoutPlan');
-  
+
   if (!dietPlanStr && !workoutPlanStr) {
-    alert("Please generate at least one plan first.");
+    notify?.("Please generate at least one plan first.", "error");
     return;
   }
 
   const dietPlan = dietPlanStr ? JSON.parse(dietPlanStr) : null;
   const workoutPlan = workoutPlanStr ? JSON.parse(workoutPlanStr) : null;
   const pdf = new jsPDF("p", "mm", "a4");
-  
-  addCombinedCoverPage(pdf, dietPlan, workoutPlan);
-  
+
+  const titleLine2 = dietPlan && workoutPlan ? "Diet & Workout Plan" : dietPlan ? "Diet Plan" : "Workout Plan";
+  const summary =
+    dietPlan && workoutPlan
+      ? "Complete diet and workout plan"
+      : dietPlan
+      ? "Personalized nutrition plan"
+      : "Custom workout schedule";
+  addCoverPage(pdf, { title: `Your Personalized\n${titleLine2}`, summary });
+
   if (dietPlan) {
     pdf.addPage();
     addDietPlanContent(pdf, dietPlan);
   }
-  
+
   if (workoutPlan) {
     pdf.addPage();
     addWorkoutPlanContent(pdf, workoutPlan);
   }
-  
+
   let filename = "SwasthX-Plan";
   if (dietPlan && workoutPlan) {
     filename = "SwasthX-Diet-Workout-Plan";
@@ -101,78 +110,32 @@ async function downloadCombinedPDF() {
   } else if (workoutPlan) {
     filename = "SwasthX-Workout-Plan";
   }
-  
+
   pdf.save(`${filename}.pdf`);
+  notify?.("PDF downloaded.", "success");
 }
 
-function addDietCoverPage(pdf: jsPDF) {
+function addCoverPage(pdf: jsPDF, { title, summary }: { title: string; summary: string }) {
   const pageWidth = pdf.internal.pageSize.width;
   const centerX = pageWidth / 2;
-  
-  // Title
+
   pdf.setFontSize(28);
   pdf.setFont("helvetica", "bold");
-  pdf.text("Your Personalized", centerX, 60, { align: "center" });
-  pdf.text("Diet Plan", centerX, 75, { align: "center" });
-  
-  // Logo/App Name
-  pdf.setFontSize(18);
-  pdf.setFont("helvetica", "normal");
-  pdf.text("Generated by", centerX, 110, { align: "center" });
-  pdf.setFontSize(24);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("SwasthX", centerX, 125, { align: "center" });
-  
-  // Plan Summary
-  pdf.setFontSize(14);
-  pdf.setFont("helvetica", "normal");
-  pdf.text("Personalized nutrition plan", centerX, 160, { align: "center" });
-  
-  // Message
-  pdf.setFontSize(14);
-  pdf.text("Remember:", centerX, 190, { align: "center" });
-  pdf.setFontSize(16);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("Consistency beats motivation", centerX, 205, { align: "center" });
-  pdf.setFontSize(14);
-  pdf.setFont("helvetica", "normal");
-  pdf.text("Follow the plan for 4–6 weeks for best results", centerX, 220, { align: "center" });
-  
-  // Date
-  const today = new Date();
-  const dateStr = today.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  title.split("\n").forEach((line, i) => {
+    pdf.text(line, centerX, 60 + i * 15, { align: "center" });
   });
-  pdf.setFontSize(12);
-  pdf.text(`Generated on: ${dateStr}`, 20, 280);
-}
 
-function addWorkoutCoverPage(pdf: jsPDF) {
-  const pageWidth = pdf.internal.pageSize.width;
-  const centerX = pageWidth / 2;
-  
-  // Title
-  pdf.setFontSize(28);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("Your Personalized", centerX, 60, { align: "center" });
-  pdf.text("Workout Plan", centerX, 75, { align: "center" });
-  
-  // Logo/App Name
   pdf.setFontSize(18);
   pdf.setFont("helvetica", "normal");
   pdf.text("Generated by", centerX, 110, { align: "center" });
   pdf.setFontSize(24);
   pdf.setFont("helvetica", "bold");
   pdf.text("SwasthX", centerX, 125, { align: "center" });
-  
-  // Plan Summary
+
   pdf.setFontSize(14);
   pdf.setFont("helvetica", "normal");
-  pdf.text("Custom workout schedule", centerX, 160, { align: "center" });
-  
-  // Message
+  pdf.text(summary, centerX, 160, { align: "center" });
+
   pdf.setFontSize(14);
   pdf.text("Remember:", centerX, 190, { align: "center" });
   pdf.setFontSize(16);
@@ -180,77 +143,13 @@ function addWorkoutCoverPage(pdf: jsPDF) {
   pdf.text("Consistency beats motivation", centerX, 205, { align: "center" });
   pdf.setFontSize(14);
   pdf.setFont("helvetica", "normal");
-  pdf.text("Follow the plan for 4–6 weeks for best results", centerX, 220, { align: "center" });
-  
-  // Date
-  const today = new Date();
-  const dateStr = today.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
-  pdf.setFontSize(12);
-  pdf.text(`Generated on: ${dateStr}`, 20, 280);
-}
+  pdf.text("Follow the plan for 4-6 weeks for best results", centerX, 220, { align: "center" });
 
-function addCombinedCoverPage(pdf: jsPDF, dietPlan: any, workoutPlan: any) {
-  const pageWidth = pdf.internal.pageSize.width;
-  const centerX = pageWidth / 2;
-  
-  let titleLine1 = "Your Personalized";
-  let titleLine2 = "";
-  
-  if (dietPlan && workoutPlan) {
-    titleLine2 = "Diet & Workout Plan";
-  } else if (dietPlan) {
-    titleLine2 = "Diet Plan";
-  } else if (workoutPlan) {
-    titleLine2 = "Workout Plan";
-  }
-  
-  // Title
-  pdf.setFontSize(28);
-  pdf.setFont("helvetica", "bold");
-  pdf.text(titleLine1, centerX, 60, { align: "center" });
-  pdf.text(titleLine2, centerX, 75, { align: "center" });
-  
-  // Logo/App Name
-  pdf.setFontSize(18);
-  pdf.setFont("helvetica", "normal");
-  pdf.text("Generated by", centerX, 110, { align: "center" });
-  pdf.setFontSize(24);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("SwasthX", centerX, 125, { align: "center" });
-  
-  let planSummary = "";
-  if (dietPlan && workoutPlan) {
-    planSummary = "Complete diet and workout plan";
-  } else if (dietPlan) {
-    planSummary = "Personalized nutrition plan";
-  } else if (workoutPlan) {
-    planSummary = "Custom workout schedule";
-  }
-  
-  pdf.setFontSize(14);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(planSummary, centerX, 160, { align: "center" });
-  
-  // Message
-  pdf.setFontSize(14);
-  pdf.text("Remember:", centerX, 190, { align: "center" });
-  pdf.setFontSize(16);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("Consistency beats motivation", centerX, 205, { align: "center" });
-  pdf.setFontSize(14);
-  pdf.setFont("helvetica", "normal");
-  pdf.text("Follow the plan for 4–6 weeks for best results", centerX, 220, { align: "center" });
-  
-  // Date
   const today = new Date();
-  const dateStr = today.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const dateStr = today.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   });
   pdf.setFontSize(12);
   pdf.text(`Generated on: ${dateStr}`, 20, 280);
@@ -628,13 +527,11 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
   pdf.text("— End of Workout Plan —", pageWidth / 2, 285, { align: "center" });
 }
 
-// Helper functions
 function formatGoal(goal: string): string {
   const goalMap: { [key: string]: string } = {
     "WEIGHT_LOSS": "Weight Loss",
     "MUSCLE_GAIN": "Muscle Gain",
     "MAINTENANCE": "Maintenance",
-    "ENDURANCE": "Endurance"
   };
   return goalMap[goal] || goal;
 }
