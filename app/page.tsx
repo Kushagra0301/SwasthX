@@ -1,249 +1,369 @@
 "use client";
 
+import Link from "next/link";
 import {
-  FiZap,
-  FiDownload,
-  FiHeart,
-  FiActivity,
-  FiTrendingUp,
-  FiUsers,
-  FiShield,
-  FiEdit,
-} from "react-icons/fi";
+  PiArrowRightBold,
+  PiBarbellBold,
+  PiForkKnifeBold,
+  PiFilePdfBold,
+  PiLockKeyBold,
+} from "react-icons/pi";
 import { useDisclaimer } from "@/components/DisclaimerProvider";
+import LivePreview from "@/components/LivePreview";
+import Reveal from "@/components/ui/Reveal";
+import Button from "@/components/ui/Button";
 import MagneticButton from "@/components/MagneticButton";
-import CurvedLoop from "@/components/CurvedLoop";
-import SpotlightCard from "@/components/SpotlightCard";
+
+const DIET_OUTPUTS = [
+  "A calorie band, not a single brittle number",
+  "Protein, carbs and fat in grams per day",
+  "A named dish for every meal slot, with its ingredients",
+  "Vegetarian or non-vegetarian throughout",
+];
+
+const WORKOUT_OUTPUTS = [
+  "One to seven training days, laid out across the week",
+  "A focus and an exercise list for each day",
+  "Sets and reps or a duration on every movement",
+  "Warm-up and cooldown written into each session",
+];
+
+const MEAL_SLOTS = [
+  { time: "07:30", slot: "Breakfast" },
+  { time: "11:00", slot: "Morning snack" },
+  { time: "13:30", slot: "Lunch" },
+  { time: "17:00", slot: "Afternoon snack" },
+  { time: "20:30", slot: "Dinner" },
+];
+
+const WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const TRAINING_DAYS = [0, 1, 3, 5];
 
 export default function Page() {
   const { navigateWithDisclaimer } = useDisclaimer();
 
   return (
-    <main className="text-text">
-      {/* HERO */}
-      <section className="grid grid-cols-1 gap-10 py-16 md:grid-cols-[1.2fr_1fr] md:py-24">
-        <div>
-          <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-accent">
-            Diet &amp; workout planning
-          </p>
-          <h1 className="font-display text-5xl font-semibold leading-[1.05] text-text md:text-6xl">
-            A plan built around your body, not a template.
+    <main>
+      {/* Hero: asymmetric split. Copy holds the left, the working instrument
+          holds the right and carries the primary action. */}
+      <section className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-10 px-5 pb-20 pt-24 md:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:pb-28">
+        <div className="lg:pt-6">
+          <h1 className="max-w-[13ch] display-1">
+            Built from your numbers.
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-text-muted">
-            Get a personalized diet and workout plan in under 60 seconds. No login, no OTP, no busywork -
-            just a plan you can start following today.
+          <p className="mt-6 max-w-[44ch] text-lg leading-relaxed text-muted">
+            Answer six questions. Get calorie targets, macros and meals, or a
+            weekly training split, and a PDF to keep.
           </p>
 
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <MagneticButton>
-              <button
-                onClick={() => navigateWithDisclaimer("/questionnaires/diet")}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-8 py-4 font-semibold text-ink transition-colors hover:bg-accent-hover"
-              >
-                <FiHeart aria-hidden="true" />
-                Generate diet plan
-              </button>
-            </MagneticButton>
-            <MagneticButton>
-              <button
+          <div className="mt-8">
+            <MagneticButton className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto"
                 onClick={() => navigateWithDisclaimer("/questionnaires/workout")}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-8 py-4 font-semibold text-text transition-colors hover:border-secondary hover:text-secondary"
               >
-                <FiActivity aria-hidden="true" />
-                Generate workout plan
-              </button>
+                <PiBarbellBold aria-hidden="true" />
+                Build a workout plan instead
+              </Button>
             </MagneticButton>
           </div>
+        </div>
 
-          <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-text-muted">
-            <span className="flex items-center gap-2">
-              <FiShield className="text-secondary" aria-hidden="true" /> No sign-up required
-            </span>
-            <span className="flex items-center gap-2">
-              <FiUsers className="text-secondary" aria-hidden="true" /> Built for real people
-            </span>
+        <Reveal delay={0.1}>
+          <LivePreview />
+        </Reveal>
+      </section>
+
+      {/* Two paths: asymmetric panel pair, each listing what it actually
+          returns. No icon-heading-text card trio anywhere on this page. */}
+      <section className="border-t border-hairline">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-px bg-hairline md:grid-cols-[1.1fr_0.9fr]">
+          <Reveal className="bg-ink px-5 py-16 md:px-10 lg:py-20">
+            <div className="mb-7 flex items-center gap-3">
+              <PiForkKnifeBold
+                className="text-2xl text-accent-text"
+                aria-hidden="true"
+              />
+              <h2 className="display-3">
+                The diet plan
+              </h2>
+            </div>
+            <ul className="flex flex-col">
+              {DIET_OUTPUTS.map((line) => (
+                <li
+                  key={line}
+                  className="border-b border-hairline py-4 text-muted first:border-t"
+                >
+                  {line}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => navigateWithDisclaimer("/questionnaires/diet")}
+              className="group mt-7 inline-flex items-center gap-2 text-sm font-medium text-accent-text transition-colors hover:text-white"
+            >
+              Answer the diet questions
+              <PiArrowRightBold
+                aria-hidden="true"
+                className="transition-transform duration-200 group-hover:translate-x-1"
+              />
+            </button>
+          </Reveal>
+
+          <Reveal delay={0.08} className="bg-ink px-5 py-16 md:px-10 lg:py-20">
+            <div className="mb-7 flex items-center gap-3">
+              <PiBarbellBold
+                className="text-2xl text-accent-text"
+                aria-hidden="true"
+              />
+              <h2 className="display-3">
+                The workout plan
+              </h2>
+            </div>
+            <ul className="flex flex-col">
+              {WORKOUT_OUTPUTS.map((line) => (
+                <li
+                  key={line}
+                  className="border-b border-hairline py-4 text-muted first:border-t"
+                >
+                  {line}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => navigateWithDisclaimer("/questionnaires/workout")}
+              className="group mt-7 inline-flex items-center gap-2 text-sm font-medium text-accent-text transition-colors hover:text-white"
+            >
+              Answer the workout questions
+              <PiArrowRightBold
+                aria-hidden="true"
+                className="transition-transform duration-200 group-hover:translate-x-1"
+              />
+            </button>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* How it works: a divided band. Three columns separated by hairlines,
+          no containers, the verb doing the work of a heading. */}
+      <section className="border-t border-hairline bg-surface/40">
+        <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 lg:py-28">
+          <h2 className="mb-14 max-w-[16ch] display-3">
+            Three minutes, start to PDF.
+          </h2>
+          <div className="grid grid-cols-1 gap-px bg-hairline md:grid-cols-3">
+            {[
+              {
+                verb: "Answer",
+                body: "Age, weight, height, activity, goal, preference. Nothing that does not change the arithmetic.",
+              },
+              {
+                verb: "Generate",
+                body: "Your figures run through a TDEE calculation and come back as targets, meals or a weekly split.",
+              },
+              {
+                verb: "Download",
+                body: "Export a PDF. Build both plans and the export carries the diet and the training together.",
+              },
+            ].map((step, i) => (
+              <Reveal
+                key={step.verb}
+                delay={i * 0.07}
+                className="bg-ink px-6 py-9 md:px-8"
+              >
+                <h3 className="display-4">
+                  {step.verb}
+                </h3>
+                <p className="mt-3 text-[0.95rem] leading-relaxed text-muted">
+                  {step.body}
+                </p>
+              </Reveal>
+            ))}
           </div>
         </div>
+      </section>
 
-        <div className="grid grid-cols-2 gap-4 self-start rounded-2xl border border-border bg-surface p-6 md:mt-4">
-          <Stat value="100%" label="Free" />
-          <Stat value="60s" label="Time to plan" />
-          <Stat value="PDF" label="Downloadable" />
-          <Stat value="0" label="Logins needed" />
+      {/* Bento: four items, four cells, deliberately unequal, and two of them
+          carry structure rather than prose. */}
+      <section className="border-t border-hairline">
+        <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 lg:py-28">
+          <h2 className="mb-12 max-w-[18ch] display-3">
+            What lands in the file.
+          </h2>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <Reveal className="rounded-[var(--r-panel)] border border-hairline bg-surface p-7 shadow-[var(--shadow-panel)] lg:col-span-2">
+              <h3 className="display-4">
+                A day with every slot filled
+              </h3>
+              <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-muted">
+                Depending on your intake the plan runs four to six eating
+                occasions. Each one arrives with a dish and its ingredients, not
+                a macro target to solve yourself.
+              </p>
+              <ol className="mt-7 flex flex-col">
+                {MEAL_SLOTS.map((meal) => (
+                  <li
+                    key={meal.slot}
+                    className="flex items-center gap-5 border-t border-hairline py-3 last:border-b"
+                  >
+                    <span className="tnum w-14 shrink-0 text-sm text-faint">
+                      {meal.time}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+                    />
+                    <span className="text-sm text-text">{meal.slot}</span>
+                  </li>
+                ))}
+              </ol>
+            </Reveal>
+
+            <Reveal
+              delay={0.06}
+              className="flex flex-col rounded-[var(--r-panel)] border border-hairline bg-surface p-7 shadow-[var(--shadow-panel)]"
+            >
+              <h3 className="display-4">
+                A week you can read at a glance
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Pick one to seven days. The plan places them and names the focus
+                for each.
+              </p>
+              <div className="mt-auto grid grid-cols-7 gap-1.5 pt-8">
+                {WEEK.map((day, i) => {
+                  const training = TRAINING_DAYS.includes(i);
+                  return (
+                    <div key={day} className="flex flex-col items-center gap-2">
+                      <span className="text-[0.65rem] uppercase text-faint">
+                        {day.slice(0, 1)}
+                      </span>
+                      <span
+                        className={`h-9 w-full rounded-[4px] ${
+                          training ? "bg-accent" : "bg-raised"
+                        }`}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="mt-4 text-xs text-faint">
+                Four days shown as an example.
+              </p>
+            </Reveal>
+
+            <Reveal
+              delay={0.1}
+              className="rounded-[var(--r-panel)] border border-hairline bg-[linear-gradient(150deg,rgb(47_107_255/0.14),transparent_62%)] p-7 shadow-[var(--shadow-panel)]"
+            >
+              <PiLockKeyBold
+                className="text-2xl text-accent-text"
+                aria-hidden="true"
+              />
+              <h3 className="mt-5 display-4">
+                Nothing to sign up for
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                No account, no email, no verification code. Your plan is held in
+                your own browser and the tab is the whole session.
+              </p>
+            </Reveal>
+
+            <Reveal
+              delay={0.14}
+              className="rounded-[var(--r-panel)] border border-hairline bg-surface p-7 shadow-[var(--shadow-panel)] lg:col-span-2"
+            >
+              <PiFilePdfBold
+                className="text-2xl text-accent-text"
+                aria-hidden="true"
+              />
+              <h3 className="mt-5 display-4">
+                One PDF, both plans
+              </h3>
+              <p className="mt-2 max-w-[56ch] text-sm leading-relaxed text-muted">
+                Generate a diet plan and a workout plan in the same visit and the
+                export merges them into a single document, so the food and the
+                training arrive on your phone together.
+              </p>
+            </Reveal>
+          </div>
         </div>
       </section>
 
-      {/* MARQUEE */}
-      <section className="border-y border-border py-6 text-text-muted">
-        <CurvedLoop marqueeText="Personalized ✦ Instant ✦ Private ✦ Free forever ✦" speed={0.6} curveAmount={90} />
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className="border-t border-border py-20">
-        <div className="mb-12 max-w-xl">
-          <h2 className="font-display text-3xl font-semibold text-text md:text-4xl">How it works</h2>
-          <p className="mt-3 text-text-muted">Three steps between you and a plan you can actually follow.</p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          <StepCard
-            step="01"
-            icon={<FiEdit aria-hidden="true" />}
-            title="Answer a few questions"
-            desc="Age, weight, goal, activity level - nothing complicated. It takes less than a minute."
-          />
-          <StepCard
-            step="02"
-            icon={<FiZap aria-hidden="true" />}
-            title="Get your plan instantly"
-            desc="Calories, macros, and workouts calculated for your exact numbers - generated in seconds."
-          />
-          <StepCard
-            step="03"
-            icon={<FiDownload aria-hidden="true" />}
-            title="Download and follow"
-            desc="Save it as a PDF, keep it on your phone, and follow it daily."
-          />
+      {/* Honest limits: editorial single column. The disclaimer is product
+          truth, so it is stated here rather than only behind a modal. */}
+      <section className="border-t border-hairline bg-surface/40">
+        <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 lg:py-28">
+          <div className="max-w-[68ch]">
+            <h2 className="display-3">
+              What this is not.
+            </h2>
+            <p className="mt-6 text-lg leading-relaxed text-muted">
+              SwasthX is a calculator with a good memory for recipes. It is not
+              medical advice, and it does not know about your medication, your
+              injuries, your allergies or your bloodwork.
+            </p>
+            <p className="mt-5 text-lg leading-relaxed text-muted">
+              Read the plan as a starting point and take it to a doctor,
+              dietitian or trainer before you commit to it, especially if you are
+              managing a condition, pregnant, or coming back from an injury.
+              Outcomes vary with genetics, sleep, stress and consistency, and
+              none of those are inputs on the form.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section className="border-t border-border py-20">
-        <div className="mb-12 max-w-xl">
-          <h2 className="font-display text-3xl font-semibold text-text md:text-4xl">Why SwasthX</h2>
-          <p className="mt-3 text-text-muted">Everything you need for a plan that fits your life.</p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <FeatureItem
-            icon={<FiHeart aria-hidden="true" />}
-            title="Personalized nutrition"
-            desc="Custom meal plans based on your goals, preferences, and lifestyle."
-          />
-          <FeatureItem
-            icon={<FiActivity aria-hidden="true" />}
-            title="Smart workouts"
-            desc="Exercise routines that adapt to your fitness level and available equipment."
-          />
-          <FeatureItem
-            icon={<FiTrendingUp aria-hidden="true" />}
-            title="Clear targets"
-            desc="Calories and macros you can track, with sensible, science-based ranges."
-          />
-          <FeatureItem
-            icon={<FiActivity aria-hidden="true" />}
-            title="Flexible plans"
-            desc="Home or gym. Vegetarian or non-veg. Built to fit around you."
-          />
-          <FeatureItem
-            icon={<FiUsers aria-hidden="true" />}
-            title="Community driven"
-            desc="Built for real people, by real people - no corporate fluff."
-          />
-          <FeatureItem
-            icon={<FiShield aria-hidden="true" />}
-            title="Privacy first"
-            desc="No data selling, no spam - just a tool that does its job."
-          />
-        </div>
-      </section>
-
-      {/* FINAL CTA */}
-      <section className="border-t border-border py-20">
-        <div className="rounded-2xl border border-border bg-surface p-10 text-center md:p-14">
-          <h3 className="font-display text-3xl font-semibold text-text md:text-4xl">Ready to start?</h3>
-          <p className="mx-auto mt-4 max-w-xl text-text-muted">
-            Join the people who've already started their health journey with SwasthX. It's free, instant,
-            and actually works.
-          </p>
-          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <MagneticButton>
-              <button
+      {/* Final CTA: the one centered moment on the page. */}
+      <section className="border-t border-hairline">
+        <div className="mx-auto max-w-6xl px-5 py-24 text-center md:px-8 lg:py-32">
+          <h2 className="mx-auto max-w-[16ch] display-2">
+            Start with whichever you will actually do.
+          </h2>
+          <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+            <MagneticButton className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto"
                 onClick={() => navigateWithDisclaimer("/questionnaires/diet")}
-                className="rounded-xl bg-accent px-8 py-4 font-semibold text-ink transition-colors hover:bg-accent-hover"
               >
-                Start with diet
-              </button>
+                <PiForkKnifeBold aria-hidden="true" />
+                Build a diet plan
+              </Button>
             </MagneticButton>
-            <MagneticButton>
-              <button
+            <MagneticButton className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto"
                 onClick={() => navigateWithDisclaimer("/questionnaires/workout")}
-                className="rounded-xl border border-border px-8 py-4 font-semibold text-text transition-colors hover:border-secondary hover:text-secondary"
               >
-                Start with workout
-              </button>
+                <PiBarbellBold aria-hidden="true" />
+                Build a workout plan
+              </Button>
             </MagneticButton>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-border py-12 text-center">
-        <p className="text-lg text-text-muted">
-          Built for people who want <span className="text-secondary">results</span>, not confusion.
-        </p>
-        <div className="mt-6 flex flex-col items-center justify-center gap-2 text-sm text-text-muted sm:flex-row sm:gap-4">
-          <span>&copy; {new Date().getFullYear()} SwasthX. All rights reserved.</span>
-          <span className="hidden sm:inline">&bull;</span>
-          <span>Made by Kushagra</span>
+      <footer className="border-t border-hairline">
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 text-sm text-faint md:flex-row md:items-center md:justify-between md:px-8">
+          <Link
+            href="/"
+            className="font-display text-base font-bold tracking-[-0.03em] text-muted transition-colors hover:text-text"
+          >
+            Swasth<span className="text-accent-text">X</span>
+          </Link>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
+            <span>{new Date().getFullYear()} SwasthX</span>
+            <span>Informational only, not medical advice</span>
+            <span>Made by Kushagra</span>
+          </div>
         </div>
       </footer>
     </main>
-  );
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="rounded-xl border border-border bg-ink/40 p-4">
-      <div className="font-display text-2xl font-semibold text-accent">{value}</div>
-      <div className="text-sm text-text-muted">{label}</div>
-    </div>
-  );
-}
-
-function StepCard({
-  step,
-  icon,
-  title,
-  desc,
-}: {
-  step: string;
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <SpotlightCard className="rounded-2xl border border-border bg-surface p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <span className="font-display text-3xl font-semibold text-text-muted">{step}</span>
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-lg text-accent">
-          {icon}
-        </span>
-      </div>
-      <h3 className="mb-2 text-xl font-semibold text-text">{title}</h3>
-      <p className="text-text-muted leading-relaxed">{desc}</p>
-    </SpotlightCard>
-  );
-}
-
-function FeatureItem({
-  icon,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <SpotlightCard className="rounded-xl border border-border bg-surface p-6">
-      <div className="mb-4 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/10 text-lg text-secondary">
-          {icon}
-        </span>
-        <h4 className="font-semibold text-text">{title}</h4>
-      </div>
-      <p className="text-sm leading-relaxed text-text-muted">{desc}</p>
-    </SpotlightCard>
   );
 }

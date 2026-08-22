@@ -1,19 +1,21 @@
-import DietForm from '../../../components/DietForm';
+import DietForm from '@/components/DietForm';
 
 export const metadata = {
-  title: 'Diet Questionnaire — SwasthX',
+  title: 'Diet plan - SwasthX',
 };
 
 export default function DietPage() {
   return (
-    <main className="py-8">
-      <div className="mb-10 max-w-2xl">
-        <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-accent">Diet plan</p>
-        <h1 className="font-display text-4xl font-semibold text-text">A few details, then your plan</h1>
-        <p className="mt-3 text-lg text-text-muted">
-          Fill out the form below to get a personalized diet plan tailored to your goals and preferences.
+    <main className="mx-auto max-w-5xl px-5 pb-24 pt-24 md:px-8">
+      <header className="mb-12 max-w-[52ch]">
+        <h1 className="display-2">
+          Six questions, then your targets.
+        </h1>
+        <p className="mt-5 text-lg leading-relaxed text-muted">
+          Everything below feeds the calculation. Nothing is stored on a server
+          and nothing is sent anywhere except to work out your numbers.
         </p>
-      </div>
+      </header>
 
       <DietForm />
     </main>

@@ -1,20 +1,21 @@
 import WorkoutForm from '@/components/WorkoutForm';
 
 export const metadata = {
-  title: 'Workout Questionnaire — SwasthX',
+  title: 'Workout plan - SwasthX',
 };
 
 export default function WorkoutPage() {
   return (
-    <main className="py-8">
-      <div className="mb-10 max-w-2xl">
-        <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-accent">Workout plan</p>
-        <h1 className="font-display text-4xl font-semibold text-text">Build your weekly schedule</h1>
-        <p className="mt-3 text-lg text-text-muted">
-          Answer a few questions and SwasthX will generate a weekly workout plan tailored to your goal,
-          fitness level, and schedule.
+    <main className="mx-auto max-w-5xl px-5 pb-24 pt-24 md:px-8">
+      <header className="mb-12 max-w-[52ch]">
+        <h1 className="display-2">
+          Tell us how you train.
+        </h1>
+        <p className="mt-5 text-lg leading-relaxed text-muted">
+          Your level, your goal, where you train and how many days you can give
+          it. The split is built around those four things.
         </p>
-      </div>
+      </header>
 
       <WorkoutForm />
     </main>

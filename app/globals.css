@@ -1,45 +1,183 @@
 @import "tailwindcss";
 
+/* Cold Luxury: graphite ground, chrome neutrals, one cobalt accent.
+   See DESIGN.md for the contrast maths behind each value. Components read
+   these through the @theme mapping below and never write raw hex. */
 :root {
-  /* Strict monochromatic palette - grays and black only, no hue anywhere.
-     Emphasis and hierarchy come from value (light/dark) and weight/type,
-     not color. --surface/--surface-raised are the only shades not in the
-     base five; they're small lifts off #121212 needed to separate card
-     layers from the page background. */
-  --ink: #121212;
-  --surface: #1a1a1a;
-  --surface-raised: #242424;
-  --border: #444444;
-  --text: #e0e0e0;
-  --text-muted: #888888;
-  --accent: #e0e0e0;
-  --accent-hover: #b0b0b0;
-  --secondary: #888888;
-  --danger: #b0b0b0;
+  color-scheme: dark;
+
+  --ink: #0e1013;
+  --surface: #16191d;
+  --raised: #1e2228;
+  --hairline: #262b32;
+  --edge: #343a43;
+
+  --text: #e4e8ee;
+  --muted: #9aa3af;
+  --faint: #79828f;
+
+  --accent: #2f6bff;
+  --accent-hover: #4c82ff;
+  --accent-text: #5b8cff;
+  --accent-weak: rgb(47 107 255 / 0.1);
+
+  --positive: #3ddc97;
+  --negative: #f2555a;
+
+  /* One radius rule. Panels, then controls, then pills. Nothing else. */
+  --r-panel: 14px;
+  --r-control: 10px;
+
+  /* Offset plus soft blur, tinted toward the ground rather than pure black. */
+  --shadow-panel: 0 18px 40px -24px rgb(3 5 9 / 0.9);
+  --shadow-lift: 0 26px 60px -28px rgb(3 5 9 / 0.95);
+  --inset-edge: inset 0 1px 0 rgb(255 255 255 / 0.04);
 }
 
 @theme inline {
   --color-ink: var(--ink);
   --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-  --color-border: var(--border);
+  --color-raised: var(--raised);
+  --color-hairline: var(--hairline);
+  --color-edge: var(--edge);
   --color-text: var(--text);
-  --color-text-muted: var(--text-muted);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
-  --color-secondary: var(--secondary);
-  --color-danger: var(--danger);
-  --font-display: var(--font-fraunces), Georgia, serif;
-  --font-body: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --color-accent-text: var(--accent-text);
+  --color-accent-weak: var(--accent-weak);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+
+  --radius-panel: var(--r-panel);
+  --radius-control: var(--r-control);
+
+  --shadow-panel: var(--shadow-panel);
+  --shadow-lift: var(--shadow-lift);
+
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
 body {
   background: var(--ink);
   color: var(--text);
   font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Hide number input spinners */
+/* Browser-drawn surfaces belong to the palette too. */
+::selection {
+  background: rgb(47 107 255 / 0.3);
+  color: var(--text);
+}
+
+* {
+  caret-color: var(--accent-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+* {
+  scrollbar-color: var(--edge) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--edge);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #414954;
+}
+
+::placeholder {
+  color: var(--faint);
+}
+
+a {
+  text-underline-offset: 3px;
+}
+
+/* The display scale lives here as real classes rather than as repeated
+   arbitrary utilities, so the steps are defined in one place and cannot drift
+   between surfaces. Capped at 4rem per DESIGN.md. */
+.display-1,
+.display-2,
+.display-3,
+.display-4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text);
+  text-wrap: balance;
+}
+
+.display-1 {
+  font-size: clamp(2.5rem, 5.2vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.display-2 {
+  font-size: clamp(2rem, 4.2vw, 3rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.display-3 {
+  font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.display-4 {
+  font-size: 1.25rem;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+/* Headline figures keep the display face but still align; mono at 2.7rem
+   gives the thousands comma a full character width and reads as a gap. */
+.dnum {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Measurements read as measurements: aligned columns, no ambiguous glyphs. */
+.tnum {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "zero" 1;
+}
+
+/* Native select arrow is browser chrome we did not draw. Replace it. */
+select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--faint) 50%),
+    linear-gradient(135deg, var(--faint) 50%, transparent 50%);
+  background-position: calc(100% - 19px) calc(50% + 1px), calc(100% - 14px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -50,29 +188,44 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-@keyframes fade-in {
+/* Non-interactive grain. Fixed and pointer-events-none so it never repaints
+   on scroll; keeps large flat graphite fields from banding. */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes sx-fade {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(16px); }
+@keyframes sx-rise {
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes toast-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes sx-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.4s ease-out;
-}
+.animate-fade { animation: sx-fade 0.35s ease-out both; }
+.animate-rise { animation: sx-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-sweep { animation: sx-sweep 1.4s ease-in-out infinite; }
 
-.animate-slide-up {
-  animation: slide-up 0.4s ease-out;
-}
-
-.animate-toast-in {
-  animation: toast-in 0.25s ease-out;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
