@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { DietRequestSchema } from "@/lib/schemas";
 import { MealType, GoalType, DietType } from "@prisma/client";
 import { buildDietPlan } from "@/lib/tdee";
-import { rateLimit, getClientIp } from "@/lib/rateLimit";
+import { rateLimit, getClientIp, tooManyRequests } from "@/lib/rateLimit";
 
 const isDev = process.env.NODE_ENV !== "production";
 const devLog = (...args: unknown[]) => {
@@ -193,7 +193,6 @@ async function getAvailableMeals(
 
     devLog(`Found ${meals.length} ${mealType} meals for ${dietType} ${goal}`);
 
-    // Correct macros for egg-related meals
     const correctedMeals = meals.map(meal => {
       const isEggRelated = meal.title.toLowerCase().includes('egg');
       if (!isEggRelated) return meal;
@@ -346,14 +345,11 @@ async function generateDietWithMealCount(
     : mealCount === 5
       ? ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK1', 'SNACK2']
       : ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK1', 'SNACK2', 'SNACK3'];
-  // For vegetarian, track paneer usage
   let paneerUsed = false;
   const usedMealTitles = new Set<string>();
-  // Add tracking for chana group
   const chanaGroup = ['chana', 'sattu', 'besan'];
   let chanaGroupUsed = 0;
   const maxChanaGroup = 2; // Allow up to 2 uses per day to avoid too much restriction
-  // Try multiple times to find a good combination
   let bestCombination: any = null;
   let bestScore = Infinity;
   const maxAttempts = 500;
@@ -382,7 +378,6 @@ async function generateDietWithMealCount(
         valid = false;
         break;
       }
-      // Filter available meals
       let available = [...pool];
     
       // For vegetarian diets, limit paneer to once per day
@@ -393,9 +388,7 @@ async function generateDietWithMealCount(
         });
       }
     
-      // Avoid repeating exact same meal title
       available = available.filter(meal => !usedMealTitles.has(meal.title));
-      // Filter to avoid overusing chana group
       available = available.filter(meal => {
         const mealIngs = meal.ingredients.toLowerCase();
         if (chanaGroup.some(g => mealIngs.includes(g)) && chanaGroupUsed >= maxChanaGroup) {
@@ -403,42 +396,34 @@ async function generateDietWithMealCount(
         }
         return true;
       });
-      // If no meals available, use any meal
       if (available.length === 0) {
         available = [...pool];
       }
-      // Score meals based on how close they are to target
       const scoredMeals = available.map(meal => {
         const calorieDiff = Math.abs(meal.calories - target.calories.avg);
         const proteinDiff = Math.abs(meal.proteinG - target.protein.avg);
         const score = calorieDiff + proteinDiff * 0.5;
         return { meal, score };
       });
-      // Sort by score and pick from top 5
       scoredMeals.sort((a, b) => a.score - b.score);
       const topN = Math.min(5, scoredMeals.length);
       const randomIndex = Math.floor(Math.random() * topN);
       const selectedMeal = scoredMeals[randomIndex]?.meal || available[0];
-      // Scale meal to target
       const scaledMeal = scaleMeal(selectedMeal, target.calories.avg);
       selectedMeals[slot] = scaledMeal;
       usedMealTitles.add(selectedMeal.title);
-      // Update totals
       totalCalories += scaledMeal.calories;
       totalProtein += scaledMeal.proteinG;
       totalCarbs += scaledMeal.carbsG;
       totalFat += scaledMeal.fatG;
-      // Track paneer usage
       if (dietType === DietType.VEG && selectedMeal.ingredients.toLowerCase().includes("paneer")) {
         paneerUsed = true;
       }
-      // Track chana group usage
       if (chanaGroup.some(g => selectedMeal.ingredients.toLowerCase().includes(g))) {
         chanaGroupUsed++;
       }
     }
     if (!valid) continue;
-    // Calculate score for this combination
     const calorieDiff = Math.abs(totalCalories - dailyTargets.calories.avg);
     const proteinDiff = Math.abs(totalProtein - dailyTargets.protein.avg);
     const carbsDiff = Math.abs(totalCarbs - dailyTargets.carbs.avg);
@@ -455,7 +440,6 @@ async function generateDietWithMealCount(
           fat: totalFat
         }
       };
-      // Good enough score, break early
       if (score < 100) break;
     }
   }
@@ -474,13 +458,8 @@ async function generateDietWithMealCount(
   return bestCombination;
 }
 export async function POST(request: Request) {
-  const { allowed, retryAfterSeconds } = rateLimit(getClientIp(request));
-  if (!allowed) {
-    return NextResponse.json(
-      { ok: false, error: "Too many requests. Please wait a moment and try again." },
-      { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } }
-    );
-  }
+  const { allowed, retryAfterSeconds } = rateLimit(`diet:${getClientIp(request)}`);
+  if (!allowed) return tooManyRequests(retryAfterSeconds);
   try {
     const body = await request.json();
     const parsed = DietRequestSchema.safeParse(body);

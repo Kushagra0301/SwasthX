@@ -1,9 +1,5 @@
 "use client";
 
-// Shared field system for both questionnaires. Labels sit above the control,
-// helper text under the label, error text under the control. Never a
-// placeholder standing in for a label.
-
 import { PiWarningCircleBold } from "react-icons/pi";
 
 export function Field({

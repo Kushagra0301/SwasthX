@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SwasthX
 
-## Getting Started
+Generates a daily diet plan and a weekly workout plan from a short
+questionnaire. Everything is computed per request; nothing about the visitor is
+stored server-side.
 
-First, run the development server:
+## Running locally
 
 ```bash
+npm install
+cp .env.example .env   # if you have one; otherwise create .env by hand
+npx prisma migrate deploy
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env` needs `DATABASE_URL`. Without it the API routes return 500 and the forms
+report that the plan did not come back.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Dev server on :3000 |
+| `npm run build` | `prisma generate` then a production build |
+| `npm run start` | Serve the production build |
+| `npm run lint` | ESLint (flat config, `next/core-web-vitals`) |
+| `npm run seed` | Seeds the demo user only; refuses to run with `NODE_ENV=production` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**The meal and exercise tables have no seed script in this repo.** Until they
+are populated, `/api/generate-diet` answers "We couldn't build a diet plan with
+those preferences" and `/api/generate-workout` falls back or 404s.
 
-## Learn More
+## Layout
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/            routes; app/api/* are the two plan generators
+components/     forms, nav, toast, disclaimer; components/ui/* are the primitives
+lib/tdee.ts     calorie and macro maths, pure and shared by the API and the hero preview
+lib/pdf.ts      client-side PDF export, reads localStorage `dietPlan` / `workoutPlan`
+lib/rateLimit.ts  in-memory fixed-window limiter used by both API routes
+prisma/         schema and migrations
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`DESIGN.md` records the visual system and the contrast maths behind each colour
+token. `PRODUCT.md` records what the product actually is and what it may not
+claim.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Rate limiting
 
-## Deploy on Vercel
+Both API routes allow 10 requests per IP per minute and answer 429 with a
+`Retry-After` header past that. Counters live in process memory, so a
+multi-replica or serverless deployment gets one window per replica. Move to a
+shared store (Redis, Upstash) if this ever needs to be a real quota.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Notes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Plans are informational. The disclaimer in `components/DisclaimerModal.tsx`
+  gates entry to both questionnaires and is stated in full on the landing page.
+- Form field names and enum values are part of the API contract; the UI may
+  change shape but those names may not.

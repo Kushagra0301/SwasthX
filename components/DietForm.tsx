@@ -166,8 +166,8 @@ export default function DietForm() {
     },
   });
 
-  // The landing page instrument already collected these. Carry them across so
-  // the visitor is not asked the same four things twice.
+  // The hero preview already collected these four values; carry them over
+  // so the visitor is not asked twice.
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(PREVIEW_KEY);
@@ -322,8 +322,6 @@ export default function DietForm() {
           onSubmit={handleSubmit(onSubmit)}
           className="animate-rise flex flex-col"
         >
-          {/* Body measurements. Sections are separated by hairlines rather
-              than nested inside their own bordered panels. */}
           <section className="border-t border-hairline pt-8">
             <h2 className="display-4">
               Your measurements
@@ -503,8 +501,6 @@ export default function DietForm() {
             </div>
           </div>
 
-          {/* The headline figure gets the weight it deserves; the rest sit
-              beside it on a hairline rail rather than in four equal cards. */}
           <div className="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-[var(--r-panel)] border border-hairline bg-hairline lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
             <div className="bg-surface p-7">
               <p className="text-sm text-muted">Calories per day</p>

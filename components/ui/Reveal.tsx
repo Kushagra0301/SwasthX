@@ -1,10 +1,5 @@
 "use client";
 
-// Scroll-triggered entrance built on a plain IntersectionObserver: no scroll
-// listener, no per-frame work, and no dependency on a library's viewport
-// heuristics. Only transform and opacity are animated, both compositable.
-// Reduced-motion visitors are handed the resting state at mount.
-
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 
@@ -26,10 +21,7 @@ export default function Reveal({
   const [shown, setShown] = useState(false);
 
   useEffect(() => {
-    if (reduce) {
-      setShown(true);
-      return;
-    }
+    if (reduce) return;
     const el = ref.current;
     if (!el) return;
 
@@ -42,7 +34,10 @@ export default function Reveal({
           }
         }
       },
-      { threshold: 0.15, rootMargin: "0px 0px -5% 0px" }
+      // The root is extended far above the viewport so anything already
+      // scrolled past counts as intersecting. Without it, a jump scroll
+      // (anchor link, Ctrl+End) strands skipped content at opacity 0.
+      { threshold: 0.15, rootMargin: "10000px 0px -5% 0px" }
     );
 
     observer.observe(el);

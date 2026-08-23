@@ -1,5 +1,3 @@
-// lib/tdee.ts
-
 export type Gender = "MALE" | "FEMALE" | "OTHER";
 export type ActivityLevel =
   | "SEDENTARY"

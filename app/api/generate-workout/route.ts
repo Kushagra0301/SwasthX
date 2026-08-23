@@ -7,7 +7,7 @@ import {
   FitnessLevel,
   WorkoutLocation,
 } from "@prisma/client";
-import { rateLimit, getClientIp } from "@/lib/rateLimit";
+import { rateLimit, getClientIp, tooManyRequests } from "@/lib/rateLimit";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -264,13 +264,8 @@ function buildDay(dayIndex: number, split: any, blocks: any[], usedExerciseIds: 
 }
 
 export async function POST(req: Request) {
-  const { allowed, retryAfterSeconds } = rateLimit(getClientIp(req));
-  if (!allowed) {
-    return NextResponse.json(
-      { ok: false, error: "Too many requests. Please wait a moment and try again." },
-      { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } }
-    );
-  }
+  const { allowed, retryAfterSeconds } = rateLimit(`workout:${getClientIp(req)}`);
+  if (!allowed) return tooManyRequests(retryAfterSeconds);
   try {
     const body = await req.json();
     const parsed = WorkoutRequestSchema.safeParse(body);

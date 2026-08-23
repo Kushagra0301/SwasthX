@@ -160,19 +160,16 @@ function addDietPlanContent(pdf: jsPDF, plan: any) {
   const pageWidth = pdf.internal.pageSize.width;
   const margin = 20;
   
-  // Diet Plan Title
   pdf.setFontSize(22);
   pdf.setFont("helvetica", "bold");
   pdf.text("Diet Plan", margin, yPos);
   yPos += 15;
   
-  // Add horizontal line
   pdf.setDrawColor(0, 150, 0);
   pdf.setLineWidth(0.5);
   pdf.line(margin, yPos, pageWidth - margin, yPos);
   yPos += 10;
   
-  // Daily Calories
   pdf.setFontSize(14);
   pdf.setFont("helvetica", "bold");
   pdf.text("Daily Calories:", margin, yPos);
@@ -180,20 +177,17 @@ function addDietPlanContent(pdf: jsPDF, plan: any) {
   pdf.text(`${plan.totalCalories?.min || 0} – ${plan.totalCalories?.max || 0} kcal`, margin + 50, yPos);
   yPos += 10;
   
-  // Per Meal Calories
   pdf.setFont("helvetica", "bold");
   pdf.text("Per Meal:", margin, yPos);
   pdf.setFont("helvetica", "normal");
   pdf.text(`${plan.perMeal?.calories?.min || 0} – ${plan.perMeal?.calories?.max || 0} kcal`, margin + 50, yPos);
   yPos += 15;
   
-  // Macronutrients Section
   pdf.setFontSize(16);
   pdf.setFont("helvetica", "bold");
   pdf.text("Macronutrients", margin, yPos);
   yPos += 10;
   
-  // Protein
   pdf.setFontSize(12);
   pdf.setFont("helvetica", "bold");
   pdf.text("Protein:", margin, yPos);
@@ -201,28 +195,24 @@ function addDietPlanContent(pdf: jsPDF, plan: any) {
   pdf.text(`${plan.proteinG?.min || 0} – ${plan.proteinG?.max || 0} grams`, margin + 40, yPos);
   yPos += 8;
   
-  // Carbs
   pdf.setFont("helvetica", "bold");
   pdf.text("Carbohydrates:", margin, yPos);
   pdf.setFont("helvetica", "normal");
   pdf.text(`${plan.carbsG?.min || 0} – ${plan.carbsG?.max || 0} grams`, margin + 40, yPos);
   yPos += 8;
   
-  // Fat
   pdf.setFont("helvetica", "bold");
   pdf.text("Fat:", margin, yPos);
   pdf.setFont("helvetica", "normal");
   pdf.text(`${plan.fatG?.min || 0} – ${plan.fatG?.max || 0} grams`, margin + 40, yPos);
   yPos += 15;
   
-  // Meal Suggestions Section - Now handling 6 meals
   if (plan.meals && typeof plan.meals === 'object') {
     pdf.setFontSize(16);
     pdf.setFont("helvetica", "bold");
     pdf.text("Daily Meal Structure", margin, yPos);
     yPos += 10;
     
-    // Define meal order and labels for 6-meal structure
     const mealOrder = ['BREAKFAST', 'SNACK1', 'LUNCH', 'SNACK2', 'DINNER', 'SNACK3', 'SNACK'];
     const mealLabels: Record<string, string> = {
       BREAKFAST: "Breakfast",
@@ -241,25 +231,21 @@ function addDietPlanContent(pdf: jsPDF, plan: any) {
       if (mealData) {
         mealCount++;
         
-        // Check if we need a new page
         if (yPos > 250) {
           pdf.addPage();
           yPos = 20;
         }
         
-        // Meal header with count
         pdf.setFontSize(14);
         pdf.setFont("helvetica", "bold");
         pdf.text(`Meal ${mealCount}: ${mealLabels[mealKey] || mealKey}`, margin, yPos);
         yPos += 8;
         
-        // Meal title
         pdf.setFontSize(12);
         pdf.setFont("helvetica", "normal");
         pdf.text(`${mealData.title || "Custom meal"}`, margin + 5, yPos);
         yPos += 8;
         
-        // Nutrition facts
         pdf.text(`Calories: ${mealData.calories || 0} kcal`, margin + 10, yPos);
         yPos += 7;
         
@@ -272,14 +258,12 @@ function addDietPlanContent(pdf: jsPDF, plan: any) {
         pdf.text(`Fat: ${mealData.fatG || 0} g`, margin + 10, yPos);
         yPos += 7;
         
-        // Ingredients with better formatting
         if (mealData.ingredients) {
           pdf.setFont("helvetica", "bold");
           pdf.text(`Ingredients:`, margin + 10, yPos);
           yPos += 7;
           
           pdf.setFont("helvetica", "normal");
-          // Split ingredients by semicolon or comma
           const ingredients = mealData.ingredients.split(/[;,]/).map((ing: string) => ing.trim()).filter(Boolean);
           
           if (ingredients.length > 0) {
@@ -299,7 +283,6 @@ function addDietPlanContent(pdf: jsPDF, plan: any) {
         
         yPos += 10; // Space between meals
         
-        // Add a subtle separator line between meals (except after the last one)
         if (mealCount < Object.values(plan.meals).filter(Boolean).length) {
           pdf.setDrawColor(200, 200, 200);
           pdf.setLineWidth(0.2);
@@ -308,7 +291,6 @@ function addDietPlanContent(pdf: jsPDF, plan: any) {
       }
     }
     
-    // Add total summary at the end
     if (plan.totals) {
       if (yPos > 220) {
         pdf.addPage();
@@ -333,7 +315,6 @@ function addDietPlanContent(pdf: jsPDF, plan: any) {
     }
   }
   
-  // Add "End of Diet Plan" marker
   pdf.setFontSize(10);
   pdf.setFont("helvetica", "italic");
   pdf.text("— End of Diet Plan —", pageWidth / 2, 285, { align: "center" });
@@ -344,19 +325,16 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
   const pageWidth = pdf.internal.pageSize.width;
   const margin = 20;
   
-  // Workout Plan Title
   pdf.setFontSize(22);
   pdf.setFont("helvetica", "bold");
   pdf.text("Workout Plan", margin, yPos);
   yPos += 15;
   
-  // Add horizontal line
   pdf.setDrawColor(0, 100, 200);
   pdf.setLineWidth(0.5);
   pdf.line(margin, yPos, pageWidth - margin, yPos);
   yPos += 10;
   
-  // Workout Summary
   pdf.setFontSize(12);
   pdf.setFont("helvetica", "bold");
   pdf.text("Goal:", margin, yPos);
@@ -380,7 +358,6 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
   pdf.text(plan.location === "GYM" ? "Gym" : "Home", margin + 100, yPos);
   yPos += 15;
   
-  // Check if days exist
   if (!plan.days || !Array.isArray(plan.days) || plan.days.length === 0) {
     pdf.setFontSize(12);
     pdf.text("No workout days planned.", margin, yPos);
@@ -390,29 +367,24 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
     return;
   }
   
-  // Add each workout day
   for (let i = 0; i < plan.days.length; i++) {
     const day = plan.days[i];
     
-    // Check if we need a new page before adding a new day
     if (yPos > 220) {
       pdf.addPage();
       yPos = 20;
       
-      // Add continuation header
       pdf.setFontSize(14);
       pdf.setFont("helvetica", "bold");
       pdf.text("Workout Plan (continued)", margin, yPos);
       yPos += 15;
     }
     
-    // Day Header
     pdf.setFontSize(14);
     pdf.setFont("helvetica", "bold");
     pdf.text(`Day ${i + 1}: ${day.dayLabel || ''}`, margin, yPos);
     yPos += 8;
     
-    // Focus
     pdf.setFontSize(12);
     pdf.setFont("helvetica", "bold");
     pdf.text("Focus:", margin, yPos);
@@ -420,7 +392,6 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
     pdf.text(day.focus || '', margin + 25, yPos);
     yPos += 10;
     
-    // Warm-up Section
     if (day.warmup && day.warmup.length > 0) {
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "bold");
@@ -446,7 +417,6 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
       yPos += 5;
     }
     
-    // Exercises Section
     if (day.exercises && day.exercises.length > 0) {
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "bold");
@@ -486,7 +456,6 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
       yPos += 5;
     }
     
-    // Cool-down Section
     if (day.cooldown && day.cooldown.length > 0) {
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "bold");
@@ -512,7 +481,6 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
       yPos += 5;
     }
     
-    // Add separation between days (unless last day)
     if (i < plan.days.length - 1) {
       pdf.setDrawColor(200, 200, 200);
       pdf.setLineWidth(0.2);
@@ -521,7 +489,6 @@ function addWorkoutPlanContent(pdf: jsPDF, plan: any) {
     }
   }
   
-  // Add "End of Workout Plan" marker
   pdf.setFontSize(10);
   pdf.setFont("helvetica", "italic");
   pdf.text("— End of Workout Plan —", pageWidth / 2, 285, { align: "center" });

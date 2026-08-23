@@ -1,9 +1,5 @@
 "use client";
 
-// Pointer physics for the page's few primary actions. Motion values are used
-// rather than React state so the pull never re-renders the tree, and the whole
-// effect is skipped for pointer-coarse devices and reduced-motion visitors.
-
 import { useRef } from "react";
 import { motion, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
 

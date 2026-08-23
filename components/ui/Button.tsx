@@ -1,9 +1,5 @@
 "use client";
 
-// One button system for the whole app. Three intents, two sizes, one radius.
-// Filled uses white on cobalt (4.5:1); every other variant keeps text at --text
-// or brighter, so no variant can fail contrast by construction.
-
 import { forwardRef } from "react";
 
 type Variant = "filled" | "outline" | "ghost";

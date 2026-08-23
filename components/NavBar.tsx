@@ -23,16 +23,18 @@ export default function Navbar() {
 
   useScrollLock(isMobileMenuOpen);
 
+  const [menuPath, setMenuPath] = useState(pathname);
+  if (menuPath !== pathname) {
+    setMenuPath(pathname);
+    setIsMobileMenuOpen(false);
+  }
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 16);
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
@@ -66,7 +68,6 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop: a single hairline-separated rail, not a row of buttons. */}
           <div className="hidden items-center md:flex">
             <div className="flex items-center gap-1 border-r border-hairline pr-2">
               {navItems.map((item) => {

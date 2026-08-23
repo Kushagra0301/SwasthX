@@ -44,8 +44,6 @@ export default function Page() {
 
   return (
     <main>
-      {/* Hero: asymmetric split. Copy holds the left, the working instrument
-          holds the right and carries the primary action. */}
       <section className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-10 px-5 pb-20 pt-24 md:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:pb-28">
         <div className="lg:pt-6">
           <h1 className="max-w-[13ch] display-1">
@@ -76,8 +74,6 @@ export default function Page() {
         </Reveal>
       </section>
 
-      {/* Two paths: asymmetric panel pair, each listing what it actually
-          returns. No icon-heading-text card trio anywhere on this page. */}
       <section className="border-t border-hairline">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-px bg-hairline md:grid-cols-[1.1fr_0.9fr]">
           <Reveal className="bg-ink px-5 py-16 md:px-10 lg:py-20">
@@ -146,8 +142,6 @@ export default function Page() {
         </div>
       </section>
 
-      {/* How it works: a divided band. Three columns separated by hairlines,
-          no containers, the verb doing the work of a heading. */}
       <section className="border-t border-hairline bg-surface/40">
         <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 lg:py-28">
           <h2 className="mb-14 max-w-[16ch] display-3">
@@ -185,8 +179,6 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Bento: four items, four cells, deliberately unequal, and two of them
-          carry structure rather than prose. */}
       <section className="border-t border-hairline">
         <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 lg:py-28">
           <h2 className="mb-12 max-w-[18ch] display-3">
@@ -293,8 +285,6 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Honest limits: editorial single column. The disclaimer is product
-          truth, so it is stated here rather than only behind a modal. */}
       <section className="border-t border-hairline bg-surface/40">
         <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 lg:py-28">
           <div className="max-w-[68ch]">
@@ -317,7 +307,6 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Final CTA: the one centered moment on the page. */}
       <section className="border-t border-hairline">
         <div className="mx-auto max-w-6xl px-5 py-24 text-center md:px-8 lg:py-32">
           <h2 className="mx-auto max-w-[16ch] display-2">

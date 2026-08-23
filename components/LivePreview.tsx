@@ -1,9 +1,5 @@
 "use client";
 
-// The hero visual is the product itself, not a picture of it. Every number
-// below comes from lib/tdee.ts, the same function the diet route uses, so what
-// the visitor drags here is the arithmetic they will get on the next page.
-
 import { useMemo, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { PiArrowRightBold } from "react-icons/pi";
@@ -135,7 +131,7 @@ export default function LivePreview() {
           {plan.totalCalories.min.toLocaleString()}
         </motion.span>
         <span className="dnum pb-2 text-xl text-faint">
-          -{plan.totalCalories.max.toLocaleString()}
+          to {plan.totalCalories.max.toLocaleString()}
         </span>
         <span className="pb-2.5 text-sm text-muted">kcal</span>
       </div>

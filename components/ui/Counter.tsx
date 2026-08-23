@@ -1,8 +1,5 @@
 "use client";
 
-// The generated number is the payload of the whole flow, so it arrives rather
-// than simply appearing. Counts once, on mount, then stays put.
-
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 
@@ -16,14 +13,11 @@ export default function Counter({
   className?: string;
 }) {
   const reduce = useReducedMotion();
-  const [shown, setShown] = useState(reduce ? value : 0);
+  const [shown, setShown] = useState(0);
   const frame = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    if (reduce) {
-      setShown(value);
-      return;
-    }
+    if (reduce) return;
     const start = performance.now();
     const step = (now: number) => {
       const t = Math.min(1, (now - start) / duration);
@@ -39,6 +33,8 @@ export default function Counter({
   }, [value, duration, reduce]);
 
   return (
-    <span className={`tnum ${className ?? ""}`}>{shown.toLocaleString()}</span>
+    <span className={`tnum ${className ?? ""}`}>
+      {(reduce ? value : shown).toLocaleString()}
+    </span>
   );
 }
