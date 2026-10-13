@@ -1,38 +1,40 @@
-/* SwasthX — green sibling of the KismatUnlock family system: warm cream,
-   deep green primary, Playfair + Noto Sans, dark = deep green night. */
+/* SwasthX — Warm Editorial: warm ivory paper, terracotta + marigold accents,
+   ink text, hairline rules instead of shadows, Playfair + Noto Sans.
+   Dark = warm charcoal-brown night. (Owner rejected the old deep-green
+   theme on 2026-10-13.) */
 :root {
-  --green-900: #0b3520;
-  --green: #14532d;
-  --green-soft: #1d6b3c;
-  --green-500: #22c55e;
-  --gold: #d97706;
-  --cream: #fff9ec;
-  --cream-2: #fffdf6;
-  --ink: #1c2420;
-  --ink-2: #44503f;
-  --muted: #75816f;
+  --terra: #c05621;
+  --terra-deep: #9c4218;
+  --marigold: #b45309;
+  --paper: #faf6ee;
+  --paper-2: #fcfbf7;
+  --ink: #1c1917;
+  --ink-2: #44403c;
+  --muted: #78716c;
+  --line: #e5dfd2;
+  --rule-strong: #1c1917;
   --red: #b91c1c;
   --red-bg: #fdeaea;
 
-  --color-primary: var(--green);
-  --color-primary-deep: var(--green-900);
-  --color-accent: var(--gold);
-  --color-bg: var(--cream);
+  --color-primary: var(--terra);
+  --color-primary-deep: var(--terra-deep);
+  --color-accent: var(--marigold);
+  --color-bg: var(--paper);
   --color-surface: #ffffff;
   --color-text: var(--ink);
   --color-text-2: var(--ink-2);
   --color-text-muted: var(--muted);
-  --color-border: rgba(20, 83, 45, 0.28);
+  --color-border: var(--line);
 
   --btn-bg: var(--color-primary);
   --btn-text: #ffffff;
   --card-bg: var(--color-surface);
   --card-border: 1px solid var(--color-border);
-  --card-shadow: 0 4px 20px -2px rgba(20, 83, 45, 0.06), 0 2px 6px -1px rgba(217, 119, 6, 0.05);
-  --card-shadow-hover: 0 10px 25px -4px rgba(20, 83, 45, 0.12), 0 4px 10px -2px rgba(217, 119, 6, 0.08);
-  --radius: 8px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --card-shadow: 0 1px 2px rgba(28, 25, 23, 0.04);
+  --card-shadow-hover: 0 3px 10px -2px rgba(28, 25, 23, 0.12);
+  --radius: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
 
   --font-display: "Tiro Devanagari Hindi", "Playfair Display", serif;
   --font-display-latin: "Playfair Display", "Tiro Devanagari Hindi", serif;
@@ -40,18 +42,29 @@
 }
 
 [data-theme="dark"] {
-  --color-primary: #4ade80;
-  --color-primary-deep: #bbf7d0;
-  --color-bg: #0c1710;
-  --color-surface: #14231a;
-  --color-text: #eaf3e4;
-  --color-text-2: #c3d4b8;
-  --color-text-muted: #93a58a;
-  --color-border: rgba(74, 222, 128, 0.35);
-  --cream: #16281c;
-  --cream-2: #122016;
+  --terra: #e08a4c;
+  --terra-deep: #eda76b;
+  --marigold: #e19a3c;
+  --paper: #171310;
+  --paper-2: #241d16;
+  --ink: #f3ede2;
+  --ink-2: #d8cfc2;
+  --muted: #a39887;
+  --line: #3e362c;
+  --rule-strong: #4a4036;
+
+  --color-primary: var(--terra);
+  --color-primary-deep: var(--terra-deep);
+  --color-accent: var(--marigold);
+  --color-bg: #171310;
+  --color-surface: #221c16;
+  --color-text: #f3ede2;
+  --color-text-2: #d8cfc2;
+  --color-text-muted: #a39887;
+  --color-border: var(--line);
   --red-bg: #450a0a;
-  --btn-bg: #166534;
-  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
-  --card-shadow-hover: 0 10px 25px -4px rgba(0, 0, 0, 0.6);
+  --btn-bg: #e08a4c;
+  --btn-text: #171310;
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --card-shadow-hover: 0 3px 10px -2px rgba(0, 0, 0, 0.6);
 }
