@@ -30,7 +30,7 @@ function initialTheme(): 'light' | 'dark' {
 export function Logo({ lang }: { lang: Lang }) {
   return (
     <a className="logo" href="/">
-      <span className="logo-leaf" aria-hidden="true">🌿</span>
+      <span className="logo-leaf" aria-hidden="true"><svg viewBox="0 0 64 64" width="30" height="30" role="img"><path d="M32 54 C12 42 15 18 32 9 C49 18 52 42 32 54 Z" fill="#c05621"/><path d="M32 49 L32 16" stroke="#b45309" strokeWidth="3.5" strokeLinecap="round"/></svg></span>
       <span>
         <span className="logo-name">SwasthX</span>
         <span className="logo-tag" style={{ display: 'block' }}>{lang === 'hi' ? 'बीमारी की जड़ तक' : 'To the root of it'}</span>
