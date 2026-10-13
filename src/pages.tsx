@@ -1,5 +1,6 @@
 import type { Lang } from './App'
 import { SX_TOOLS, type SxTool } from './content-tools'
+import { AdSlot } from './AdSlot'
 import { SX_ARTICLES, type SxArticle } from './content-articles'
 import { SX_TIPS } from './content-tips'
 import { CLUSTER_META } from './seo'
@@ -7,9 +8,7 @@ import { SxToolBody } from './tools'
 
 const h = (lang: Lang) => lang === 'hi'
 
-export function AdSlot() {
-  return <div className="ad-slot" aria-hidden="true" />
-}
+
 
 const toolCard = (lang: Lang) => (t: SxTool) => (
   <a key={t.slug} className="tool-card" href={`/tools/${t.slug}`}>
@@ -167,7 +166,7 @@ export function ArticlePage({ lang, article }: { lang: Lang; article: SxArticle 
         <section key={i}>
           <h2>{s.h}</h2>
           <p>{s.body}</p>
-          {i === 1 && <AdSlot />}
+          {i === 1 && <AdSlot kind="inArticle" />}
         </section>
       ))}
       <div className="redflag-box">
