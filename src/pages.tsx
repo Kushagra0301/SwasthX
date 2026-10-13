@@ -1,0 +1,258 @@
+import type { Lang } from './App'
+import { SX_TOOLS, type SxTool } from './content-tools'
+import { SX_ARTICLES, type SxArticle } from './content-articles'
+import { SX_TIPS } from './content-tips'
+import { CLUSTER_META } from './seo'
+import { SxToolBody } from './tools'
+
+const h = (lang: Lang) => lang === 'hi'
+
+export function AdSlot() {
+  return <div className="ad-slot" aria-hidden="true" />
+}
+
+const toolCard = (lang: Lang) => (t: SxTool) => (
+  <a key={t.slug} className="tool-card" href={`/tools/${t.slug}`}>
+    <strong>{h(lang) ? t.nameHi : t.nameEn}</strong>
+    <span>{h(lang) ? t.tagHi : t.tagEn}</span>
+  </a>
+)
+
+const storyCard = (lang: Lang) => (a: SxArticle) => (
+  <a key={a.slug} className="story-card" href={`/${a.cluster}/${a.slug}`}>
+    <strong>{a.titleHi}</strong>
+    <span>{a.metaDescHi}</span>
+  </a>
+)
+
+function tipOfDay() {
+  const now = new Date()
+  const doy = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000)
+  return SX_TIPS[doy % SX_TIPS.length]
+}
+
+export function Home({ lang, go }: { lang: Lang; go: (p: string) => void }) {
+  const tip = tipOfDay()
+  const topTools = ['deficiency-risk-checker', 'lab-report-reader', 'bmi-calculator', 'period-calculator', 'indian-food-calories', 'protein-calculator']
+    .map((s) => SX_TOOLS.find((t) => t.slug === s)!).filter(Boolean)
+  return (
+    <main className="wrap">
+      <section className="hero">
+        <h1>{h(lang) ? 'बीमारी की जड़ तक' : 'Health, down to the root'}</h1>
+        <p className="hero-sub">{h(lang)
+          ? 'पेट, बाल और शरीर की कमियों की सही जानकारी — सरल हिंदी में, sources के साथ। कोई इलाज नहीं बेचा जाता, कोई डर नहीं फैलाया जाता।'
+          : 'Straightforward information on gut, hair and deficiencies — in simple language, with sources. Nothing is sold as a cure, and nothing is written to scare you.'}</p>
+      </section>
+
+      <div className="feature-grid">
+        <div className="tip-card">
+          <span className="chip">{h(lang) ? 'आज का Health Tip' : 'Today’s Health Tip'}</span>
+          <h2>{tip.titleHi}</h2>
+          <p>{tip.bodyHi}</p>
+          <p className="note">{h(lang) ? 'रोज़ एक नया tip — कल फिर आएं।' : 'A new tip every day — come back tomorrow.'}</p>
+        </div>
+        <div className="card">
+          <span className="chip">{h(lang) ? 'पहले जांचें' : 'Check first'}</span>
+          <h3 style={{ marginTop: '0.6rem' }}>{h(lang) ? 'किस विटामिन की कमी हो सकती है?' : 'Which deficiency could it be?'}</h3>
+          <p>{h(lang) ? 'थकान, बाल झड़ना, भूलना — लक्षणों से संभावना जांचें और जानें कौन सी lab test पक्का बताएगी।' : 'Fatigue, hair fall, forgetfulness — check the likely deficiency from symptoms and learn which lab test confirms it.'}</p>
+          <button className="btn btn-primary" onClick={() => go('/tools/deficiency-risk-checker')}>{h(lang) ? 'Checker खोलें →' : 'Open the checker →'}</button>
+        </div>
+      </div>
+
+      <AdSlot />
+
+      <section>
+        <h2 className="section-title">{h(lang) ? 'तीन विषय, जड़ से' : 'Three topics, from the root'}</h2>
+        <div className="three-col">
+          {(['gut', 'hair', 'deficiency'] as const).map((c) => (
+            <a key={c} className="tool-card" href={`/${c}`}>
+              <strong>{h(lang) ? CLUSTER_META[c].hi : CLUSTER_META[c].en}</strong>
+              <span>{h(lang) ? CLUSTER_META[c].tagHi : CLUSTER_META[c].tagEn}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="section-title">{h(lang) ? 'मुफ़्त Tools' : 'Free tools'} <a href="/tools" style={{ fontSize: '0.95rem' }}>{h(lang) ? 'सभी tools →' : 'All tools →'}</a></h2>
+        <div className="three-col">{topTools.map(toolCard(lang))}</div>
+      </section>
+
+      <div className="trust-strip">
+        <h2>{h(lang) ? 'हमारी तीन कसौटियाँ' : 'Our three rules'}</h2>
+        <p>{h(lang)
+          ? '1) हर लेख के नीचे sources दिए जाते हैं।  2) "डॉक्टर को कब दिखाएं" हर लेख में साफ़ लिखा होता है।  3) यहाँ कोई इलाज, दवा या ख़ुराक नहीं बताई जाती — जानकारी दी जाती है, ताकि आप सही सवाल पूछ सकें।'
+          : '1) Every article lists its sources. 2) Every article states plainly when to see a doctor. 3) We never prescribe a treatment, medicine or dose — we give information, so you can ask the right questions.'}</p>
+      </div>
+
+      {(['gut', 'hair', 'deficiency'] as const).map((c) => (
+        <section key={c}>
+          <h2 className="section-title">{h(lang) ? CLUSTER_META[c].hi : CLUSTER_META[c].en} <a href={`/${c}`} style={{ fontSize: '0.95rem' }}>{h(lang) ? 'सभी लेख →' : 'All articles →'}</a></h2>
+          <div className="three-col">{SX_ARTICLES.filter((a) => a.cluster === c).slice(0, 3).map(storyCard(lang))}</div>
+        </section>
+      ))}
+    </main>
+  )
+}
+
+export function ToolsHub({ lang }: { lang: Lang }) {
+  return (
+    <main className="wrap">
+      <section className="hero">
+        <h1>{h(lang) ? 'सभी Health Tools' : 'All Health Tools'}</h1>
+        <p className="hero-sub">{h(lang) ? 'सभी tools मुफ़्त हैं और आपके ब्राउज़र में चलते हैं — health जानकारी कहीं भेजी नहीं जाती।' : 'All tools are free and run in your browser — your health inputs are never sent anywhere.'}</p>
+      </section>
+      <div className="two-col">{SX_TOOLS.map(toolCard(lang))}</div>
+    </main>
+  )
+}
+
+export function ToolPage({ lang, slug }: { lang: Lang; slug: string }) {
+  const tool = SX_TOOLS.find((t) => t.slug === slug)!
+  const related = SX_TOOLS.filter((t) => t.slug !== slug).slice(0, 4)
+  return (
+    <main className="wrap article">
+      <h1>{h(lang) ? tool.nameHi : tool.nameEn}</h1>
+      <p className="article-intro">{h(lang) ? tool.tagHi : tool.tagEn}</p>
+      <section className="card">
+        <SxToolBody slug={slug} lang={lang} />
+      </section>
+      <AdSlot />
+      <section>
+        <h2 className="section-title">{h(lang) ? 'और tools' : 'More tools'}</h2>
+        <div className="two-col">{related.map(toolCard(lang))}</div>
+      </section>
+    </main>
+  )
+}
+
+export function ClusterHub({ lang, cluster }: { lang: Lang; cluster: string }) {
+  const meta = CLUSTER_META[cluster]
+  const tools = SX_TOOLS.filter((t) => t.cluster === cluster)
+  const articles = SX_ARTICLES.filter((a) => a.cluster === cluster)
+  return (
+    <main className="wrap">
+      <section className="hero">
+        <h1>{h(lang) ? meta.hi : meta.en}</h1>
+        <p className="hero-sub">{h(lang) ? meta.tagHi : meta.tagEn}</p>
+      </section>
+      {tools.length > 0 && (
+        <section>
+          <h2 className="section-title">{h(lang) ? 'पहले जांचें' : 'Check first'}</h2>
+          <div className="two-col">{tools.map(toolCard(lang))}</div>
+        </section>
+      )}
+      <section>
+        <h2 className="section-title">{h(lang) ? 'लेख पढ़ें' : 'Read'}</h2>
+        <div className="two-col">{articles.map(storyCard(lang))}</div>
+      </section>
+    </main>
+  )
+}
+
+export function ArticlePage({ lang, article }: { lang: Lang; article: SxArticle }) {
+  const related = SX_ARTICLES.filter((a) => a.cluster === article.cluster && a.slug !== article.slug).slice(0, 3)
+  return (
+    <main className="wrap article">
+      <h1>{article.titleHi}</h1>
+      <div className="reviewer-line">
+        <span>📋</span>
+        <span>{h(lang)
+          ? 'यह लेख नीचे दिए गए sources के आधार पर तैयार किया गया है। यह जानकारी शैक्षणिक है — निदान या इलाज के लिए डॉक्टर से मिलें।'
+          : 'Prepared from the sources listed below. This is educational information — for diagnosis or treatment, see a doctor.'}</span>
+      </div>
+      <p className="article-intro">{article.introHi}</p>
+      <AdSlot />
+      {article.sections.map((s, i) => (
+        <section key={i}>
+          <h2>{s.h}</h2>
+          <p>{s.body}</p>
+          {i === 1 && <AdSlot />}
+        </section>
+      ))}
+      <div className="redflag-box">
+        <h2>{h(lang) ? 'डॉक्टर को कब दिखाएं' : 'When to see a doctor'}</h2>
+        <ul className="steps-list">
+          {article.redFlagsHi.map((r, i) => <li key={i}>{r}</li>)}
+        </ul>
+      </div>
+      <div className="sources-list">
+        <strong>{h(lang) ? 'Sources:' : 'Sources:'}</strong>
+        <ul>
+          {article.sources.map((s, i) => <li key={i}><a href={s.url} target="_blank" rel="noreferrer">{s.label}</a></li>)}
+        </ul>
+      </div>
+      <section>
+        <h2 className="section-title">{h(lang) ? 'इसी विषय पर और' : 'More on this topic'}</h2>
+        <div className="stack">{related.map(storyCard(lang))}</div>
+      </section>
+    </main>
+  )
+}
+
+const LEGAL: Record<string, { hi: { title: string; body: string[] }; en: { title: string; body: string[] } }> = {
+  about: {
+    hi: {
+      title: 'SwasthX के बारे में',
+      body: [
+        'SwasthX एक स्वतंत्र हिंदी स्वास्थ्य-जानकारी site है। हम तीन विषयों पर लिखते हैं — पेट की सेहत, बालों की सेहत और शरीर की कमियाँ (Vitamin D, B12, iron) — क्योंकि भारत में सबसे आम शिकायतें इन्हीं से जुड़ी हैं।',
+        'हमारा तरीका साधारण है: पहले वजह (जड़) समझाओ, फिर बताओ कि कौन सी जांच से पक्का पता चलता है, और कब डॉक्टर के पास जाना चाहिए। हम कोई इलाज, दवा या ख़ुराक नहीं बताते।',
+        'हर लेख के नीचे उसके sources दिए जाते हैं — WHO, ICMR, NIH जैसी संस्थाओं के प्रकाशन। Tools आपके ब्राउज़र में चलते हैं; आपकी health जानकारी हमारे पास आती ही नहीं।',
+      ],
+    },
+    en: {
+      title: 'About SwasthX',
+      body: [
+        'SwasthX is an independent Hindi health-information site covering three topics — gut health, hair health and common deficiencies (Vitamin D, B12, iron) — because most everyday complaints in India trace back to these.',
+        'Our method is simple: explain the root cause first, then which test actually confirms it, and when you should see a doctor. We never prescribe treatments, medicines or doses.',
+        'Every article lists its sources — publications from bodies like WHO, ICMR and NIH. Tools run in your browser; your health inputs never reach us.',
+      ],
+    },
+  },
+  'privacy-policy': {
+    hi: {
+      title: 'Privacy Policy',
+      body: [
+        'SwasthX के सभी tools आपके ब्राउज़र में चलते हैं। आप जो भी जानकारी भरते हैं — वज़न, लक्षण, report की values — वह कहीं भेजी या रखी नहीं जाती।',
+        'हम page visits की गिनती के लिए सामान्य analytics और विज्ञापनों के लिए Google AdSense का उपयोग करते हैं। AdSense cookies का उपयोग कर सकता है; इसे आप Google की ad settings से नियंत्रित कर सकते हैं।',
+        'हम कोई personal data नहीं बेचते।',
+      ],
+    },
+    en: {
+      title: 'Privacy Policy',
+      body: [
+        'Every SwasthX tool runs in your browser. Anything you enter — weight, symptoms, report values — is never sent to or stored by us.',
+        'We use basic analytics to count visits and Google AdSense for advertising. AdSense may use cookies, which you can control in Google’s ad settings.',
+        'We do not sell personal data.',
+      ],
+    },
+  },
+  disclaimer: {
+    hi: {
+      title: 'चिकित्सा अस्वीकरण',
+      body: [
+        'SwasthX पर प्रकाशित सारी जानकारी केवल शैक्षणिक उद्देश्य के लिए है। यह किसी बीमारी का निदान (diagnosis), इलाज या चिकित्सा सलाह नहीं है, और डॉक्टर की जगह नहीं ले सकती।',
+        'किसी tool का परिणाम "संभावना" मात्र है — पक्का पता केवल उचित जांच और डॉक्टर की राय से चलता है। कोई दवा, supplement या इलाज शुरू/बंद करने से पहले डॉक्टर से सलाह लें।',
+        'आपात स्थिति (तेज़ दर्द, खून आना, सांस की तकलीफ़, बेहोशी) में site न पढ़ें — तुरंत अस्पताल जाएं या 112 पर call करें।',
+      ],
+    },
+    en: {
+      title: 'Medical Disclaimer',
+      body: [
+        'Everything published on SwasthX is for education only. It is not a diagnosis, treatment or medical advice, and it cannot replace a doctor.',
+        'A tool result is only an indication — certainty comes from proper tests and a doctor’s opinion. Consult a doctor before starting or stopping any medicine or supplement.',
+        'In an emergency (severe pain, bleeding, breathing difficulty, fainting), do not read a website — go to a hospital or call 112.',
+      ],
+    },
+  },
+}
+
+export function LegalPage({ lang, slug }: { lang: Lang; slug: string }) {
+  const page = (LEGAL[slug] ?? LEGAL.about)[h(lang) ? 'hi' : 'en']
+  return (
+    <main className="wrap article">
+      <h1>{page.title}</h1>
+      {page.body.map((b, i) => <p key={i}>{b}</p>)}
+    </main>
+  )
+}
