@@ -1,6 +1,7 @@
 import type { Lang } from './App'
 import { SX_TOOLS, type SxTool } from './content-tools'
 import { AdSlot } from './AdSlot'
+import { ProductCard } from './ProductCard'
 import { SX_ARTICLES, type SxArticle } from './content-articles'
 import { SX_TIPS } from './content-tips'
 import { CLUSTER_META } from './seo'
@@ -106,6 +107,17 @@ export function ToolsHub({ lang }: { lang: Lang }) {
   )
 }
 
+const TOOL_PRODUCTS: Record<string, { label: string; query: string }[]> = {
+  'indian-food-calories': [
+    { label: 'किचन तौलने की मशीन (weighing scale)', query: 'digital kitchen weighing scale' },
+    { label: 'मापने वाले कप और चम्मच का set', query: 'measuring cups and spoons set' },
+  ],
+  'bmi-calculator': [
+    { label: 'शरीर मापने का टेप', query: 'body measuring tape' },
+    { label: 'वज़न तौलने की मशीन', query: 'bathroom weighing scale digital' },
+  ],
+}
+
 export function ToolPage({ lang, slug }: { lang: Lang; slug: string }) {
   const tool = SX_TOOLS.find((t) => t.slug === slug)!
   const related = SX_TOOLS.filter((t) => t.slug !== slug).slice(0, 4)
@@ -117,6 +129,7 @@ export function ToolPage({ lang, slug }: { lang: Lang; slug: string }) {
         <SxToolBody slug={slug} lang={lang} />
       </section>
       <AdSlot />
+      {TOOL_PRODUCTS[slug] && <ProductCard lang={lang} items={TOOL_PRODUCTS[slug]} />}
       <section>
         <h2 className="section-title">{h(lang) ? 'और tools' : 'More tools'}</h2>
         <div className="two-col">{related.map(toolCard(lang))}</div>
@@ -181,6 +194,9 @@ export function ArticlePage({ lang, article }: { lang: Lang; article: SxArticle 
           {article.sources.map((s, i) => <li key={i}><a href={s.url} target="_blank" rel="noreferrer">{s.label}</a></li>)}
         </ul>
       </div>
+      {article.products && article.products.length > 0 && (
+        <ProductCard lang={lang} items={article.products} />
+      )}
       <section>
         <h2 className="section-title">{h(lang) ? 'इसी विषय पर और' : 'More on this topic'}</h2>
         <div className="stack">{related.map(storyCard(lang))}</div>
@@ -233,6 +249,7 @@ const LEGAL: Record<string, { hi: { title: string; body: string[] }; en: { title
         'SwasthX पर प्रकाशित सारी जानकारी केवल शैक्षणिक उद्देश्य के लिए है। यह किसी बीमारी का निदान (diagnosis), इलाज या चिकित्सा सलाह नहीं है, और डॉक्टर की जगह नहीं ले सकती।',
         'किसी tool का परिणाम "संभावना" मात्र है — पक्का पता केवल उचित जांच और डॉक्टर की राय से चलता है। कोई दवा, supplement या इलाज शुरू/बंद करने से पहले डॉक्टर से सलाह लें।',
         'आपात स्थिति (तेज़ दर्द, खून आना, सांस की तकलीफ़, बेहोशी) में site न पढ़ें — तुरंत अस्पताल जाएं या 112 पर call करें।',
+        'पार्टनर लिंक (Affiliate Disclosure): SwasthX के कुछ पेजों पर Amazon.in के affiliate links दिए गए हैं। अगर आप इन links के ज़रिए कुछ खरीदते हैं, तो SwasthX को Amazon से छोटा-सा commission मिल सकता है — आपकी कीमत में कोई अंतर नहीं पड़ता। एक Amazon Associate के रूप में, SwasthX qualifying purchases से कमाता है। हम किसी उत्पाद के असर की गारंटी नहीं देते; खरीदने से पहले उत्पाद की जानकारी खुद भी जांच लें।',
       ],
     },
     en: {
@@ -241,6 +258,7 @@ const LEGAL: Record<string, { hi: { title: string; body: string[] }; en: { title
         'Everything published on SwasthX is for education only. It is not a diagnosis, treatment or medical advice, and it cannot replace a doctor.',
         'A tool result is only an indication — certainty comes from proper tests and a doctor’s opinion. Consult a doctor before starting or stopping any medicine or supplement.',
         'In an emergency (severe pain, bleeding, breathing difficulty, fainting), do not read a website — go to a hospital or call 112.',
+        'Affiliate Disclosure: Some pages on SwasthX carry affiliate links to Amazon.in. If you buy through these links, SwasthX may earn a small commission from Amazon — at no extra cost to you. As an Amazon Associate, SwasthX earns from qualifying purchases. We do not guarantee any product’s effect; please check the product details yourself before buying.',
       ],
     },
   },

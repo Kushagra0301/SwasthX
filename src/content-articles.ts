@@ -12,6 +12,8 @@ export interface SxArticle {
   sections: { h: string; body: string }[]
   redFlagsHi: string[]
   sources: { label: string; url: string }[]
+  // Amazon.in affiliate product searches (non-ingestible items only).
+  products?: { label: string; query: string }[]
 }
 
 export const SX_ARTICLES: SxArticle[] = [
@@ -19,6 +21,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'pet-phoolna-bloating',
     cluster: 'gut',
+    products: [
+      { label: "स्टील पानी की बोतल (1 लीटर)", query: "steel water bottle 1 litre" },
+      { label: "घर के व्यायाम के लिए योगा मैट", query: "yoga mat for home exercise" },
+    ],
     titleHi: 'पेट फूलना (Bloating): असली वजहें और क्या करें',
     titleEn: 'Bloating: Real Causes and What Helps',
     metaDescHi: 'खाना खाते ही पेट फूल जाता है? वजहें जानिए — हवा निगलना, कब्ज़, IBS या खाने की आदतें, और घर पर क्या करना ठीक रहेगा।',
@@ -60,6 +66,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'acidity-gerd',
     cluster: 'gut',
+    products: [
+      { label: "एसिडिटी के लिए wedge pillow", query: "wedge pillow for acidity" },
+      { label: "स्टील पानी की बोतल (1 लीटर)", query: "steel water bottle 1 litre" },
+    ],
     titleHi: 'एसिडिटी और सीने की जलन (GERD): वजहें और बचाव',
     titleEn: 'Acidity and Heartburn (GERD): Causes and Care',
     metaDescHi: 'सीने में जलन, खट्टी डकार और मुँह में कड़वा पानी — एसिडिटी क्यों होती है, कौन सी आदतें बढ़ाती हैं, और कब डॉक्टर ज़रूरी है।',
@@ -97,6 +107,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'kabz-constipation',
     cluster: 'gut',
+    products: [
+      { label: "टॉयलेट squat stool", query: "squat stool for toilet" },
+      { label: "स्टील पानी की बोतल (1 लीटर)", query: "steel water bottle 1 litre" },
+    ],
     titleHi: 'कब्ज़ (Constipation): पेट साफ क्यों नहीं होता',
     titleEn: 'Constipation: Why Your Stomach Does Not Clear',
     metaDescHi: 'कब्ज़ की असली वजहें — पानी की कमी, रेशा कम, बैठे रहने की आदत। घर पर क्या बदलें और कब डॉक्टर को दिखाएं।',
@@ -134,6 +148,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'ibs-kya-hai',
     cluster: 'gut',
+    products: [
+      { label: "खाने की डायरी (food diary notebook)", query: "food diary notebook" },
+      { label: "इलेक्ट्रिक हीटिंग पैड", query: "electric heating pad" },
+    ],
     titleHi: 'IBS क्या है: पेट की वह दिक्कत जो जाँच में नहीं दिखती',
     titleEn: 'What Is IBS: The Gut Problem Tests Do Not Show',
     metaDescHi: 'बार-बार पेट दर्द, गैस, कभी कब्ज़ कभी दस्त और सारी रिपोर्ट सामान्य? IBS क्या है, तनाव से इसका क्या नाता है, समझिए।',
@@ -171,6 +189,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'pet-ke-good-bacteria',
     cluster: 'gut',
+    products: [
+      { label: "पेट की सेहत पर किताब (हिंदी)", query: "gut health book hindi" },
+      { label: "घर के अचार-कांजी के लिए कांच के जार", query: "glass jar set for kitchen storage" },
+    ],
     titleHi: 'पेट के अच्छे बैक्टीरिया: आंत की सेहत का असली राज़',
     titleEn: 'Good Bacteria in Your Gut: The Real Secret of Gut Health',
     metaDescHi: 'आंत में रहने वाले खरबों बैक्टीरिया क्या करते हैं, दही-अचार जैसे खाने क्यों फायदेमंद माने जाते हैं, और एंटीबायोटिक का क्या असर होता है।',
@@ -208,6 +230,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'khana-hajam-na-hona',
     cluster: 'gut',
+    products: [
+      { label: "स्टील पानी की बोतल (1 लीटर)", query: "steel water bottle 1 litre" },
+      { label: "इलेक्ट्रिक गरम पानी की थैली", query: "electric hot water bag" },
+    ],
     titleHi: 'खाना हज़म न होना: अपच है या दूध से दिक्कत?',
     titleEn: 'Food Not Digesting: Indigestion or Milk Intolerance?',
     metaDescHi: 'खाने के बाद भारीपन, डकार और पेट में गड़बड़ — अपच और लैक्टोज़ इंटॉलरेंस (दूध न पचना) में फर्क कैसे पहचानें।',
@@ -245,6 +271,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'pet-dard-kab-gambhir',
     cluster: 'gut',
+    products: [
+      { label: "डिजिटल थर्मामीटर", query: "digital thermometer" },
+      { label: "घर के लिए first aid kit", query: "first aid kit for home" },
+    ],
     titleHi: 'पेट दर्द: कब घर पर देखें, कब तुरंत अस्पताल जाएं',
     titleEn: 'Stomach Pain: When to Wait and When to Rush to Hospital',
     metaDescHi: 'हर पेट दर्द गैस नहीं होता। अपेंडिक्स, पित्त की पथरी और अन्य गंभीर वजहों के संकेत पहचानिए — कब तुरंत इलाज ज़रूरी है।',
@@ -282,6 +312,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'loose-motion-care',
     cluster: 'gut',
+    products: [
+      { label: "स्टील पानी की बोतल (1 लीटर)", query: "steel water bottle 1 litre" },
+      { label: "डिजिटल थर्मामीटर", query: "digital thermometer" },
+    ],
     titleHi: 'दस्त (Loose Motion): घर पर संभाल और ORS का सही तरीका',
     titleEn: 'Loose Motion: Home Care and the Right Way to Use ORS',
     metaDescHi: 'दस्त में सबसे बड़ा खतरा पानी की कमी है। ORS कब और कैसे दें, क्या खाएं-पिएं, और बच्चों-बुज़ुर्गों के लिए खास ध्यान।',
@@ -320,6 +354,11 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'baal-jhadna-wajah',
     cluster: 'hair',
+    products: [
+      { label: "नीम की लकड़ी की कंघी", query: "wooden neem comb" },
+      { label: "सिर की मालिश वाला scalp massager brush", query: "scalp massager brush" },
+      { label: "सिल्क तकिया कवर", query: "silk pillowcase" },
+    ],
     titleHi: 'बाल क्यों झड़ते हैं: तेल नहीं, जड़ की बात समझिए',
     titleEn: 'Why Hair Falls: Understand the Root Cause, Not Just Oil',
     metaDescHi: 'बाल झड़ने की असली वजहें — वंशानुगत गंजापन, तनाव के बाद झड़ना, थायरॉयड, शरीर की कमियाँ और रूसी। कौन सी वजह आप पर लागू होती है?',
@@ -361,6 +400,11 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'baal-jhadna-kitna-normal',
     cluster: 'hair',
+    products: [
+      { label: "नीम की लकड़ी की कंघी", query: "wooden neem comb" },
+      { label: "सिल्क तकिया कवर", query: "silk pillowcase" },
+      { label: "बालों के लिए microfiber तौलिया", query: "microfiber hair towel" },
+    ],
     titleHi: 'रोज़ कितने बाल झड़ना सामान्य है: 50-100 वाला सच',
     titleEn: 'How Much Hair Fall Is Normal: The 50-100 Truth',
     metaDescHi: 'कंघी और नहाने में बाल देखकर घबराते हैं? जानिए रोज़ कितने बाल झड़ना शरीर की सामान्य प्रक्रिया है और चिंता कब करनी चाहिए।',
@@ -398,6 +442,11 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'dandruff-rusi',
     cluster: 'hair',
+    products: [
+      { label: "सिर की मालिश वाला scalp massager brush", query: "scalp massager brush" },
+      { label: "नीम की लकड़ी की कंघी", query: "wooden neem comb" },
+      { label: "बालों के लिए microfiber तौलिया", query: "microfiber hair towel" },
+    ],
     titleHi: 'रूसी (Dandruff): वजह, देखभाल और सही शैम्पू की समझ',
     titleEn: 'Dandruff: Causes, Care and Choosing the Right Shampoo',
     metaDescHi: 'कंधों पर सफेद पपड़ी और खुजली — रूसी क्यों होती है, साधारण शैम्पू से क्यों नहीं जाती, और कब त्वचा-विशेषज्ञ की ज़रूरत है।',
@@ -435,6 +484,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'baalo-ke-liye-khana',
     cluster: 'hair',
+    products: [
+      { label: "किचन तौलने की मशीन (weighing scale)", query: "digital kitchen weighing scale" },
+      { label: "हेल्दी खाना पकाने की किताब (हिंदी)", query: "healthy cooking book hindi" },
+    ],
     titleHi: 'बालों के लिए खाना: प्रोटीन, आयरन और विटामिन की थाली',
     titleEn: 'Food for Hair: The Protein, Iron and Vitamin Plate',
     metaDescHi: 'बाल केराटिन नाम के प्रोटीन से बनते हैं। जानिए कौन से खाने — दाल, अंडा, दही, हरी सब्ज़ियाँ — बालों की असली खुराक हैं।',
@@ -472,6 +525,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'safed-baal',
     cluster: 'hair',
+    products: [
+      { label: "नीम की लकड़ी की कंघी", query: "wooden neem comb" },
+      { label: "सिल्क तकिया कवर", query: "silk pillowcase" },
+    ],
     titleHi: 'सफेद बाल: वजह क्या है और मिथक कौन से हैं',
     titleEn: 'Grey Hair: Real Causes and Common Myths',
     metaDescHi: 'कम उम्र में बाल सफेद क्यों होते हैं — परिवार, विटामिन की कमी या तनाव? एक बाल नोचने से तीन उगते हैं — सच जानिए।',
@@ -509,6 +566,11 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'tel-maalish-sach',
     cluster: 'hair',
+    products: [
+      { label: "सिर की मालिश वाला scalp massager brush", query: "scalp massager brush" },
+      { label: "नीम की लकड़ी की कंघी", query: "wooden neem comb" },
+      { label: "बालों के लिए microfiber तौलिया", query: "microfiber hair towel" },
+    ],
     titleHi: 'तेल मालिश का सच: तेल बाल को क्या देता है और क्या नहीं',
     titleEn: 'The Truth About Oil Massage: What Oil Can and Cannot Do',
     metaDescHi: 'क्या तेल लगाने से बाल उगते हैं? ईमानदार जवाब — तेल बाल के तने को बचाता है, जड़ से नए बाल नहीं उगाता। सही तरीका जानिए।',
@@ -546,6 +608,11 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'baal-patle-hona',
     cluster: 'hair',
+    products: [
+      { label: "नीम की लकड़ी की कंघी", query: "wooden neem comb" },
+      { label: "सिल्क तकिया कवर", query: "silk pillowcase" },
+      { label: "सिर की मालिश वाला scalp massager brush", query: "scalp massager brush" },
+    ],
     titleHi: 'बाल पतले होना: माँग चौड़ी होना और कब जाँच कराएं',
     titleEn: 'Thinning Hair: Widening Parting and When to Get Tested',
     metaDescHi: 'बाल झड़ते नहीं, पतले होते जा रहे हैं? पुरुषों और महिलाओं के अलग पैटर्न, और थायरॉयड-ferritin जाँच कब ज़रूरी है।',
@@ -583,6 +650,11 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'garmi-me-baal-dekhbhal',
     cluster: 'hair',
+    products: [
+      { label: "धूप से बचाव की सूती टोपी", query: "cotton cap for sun protection" },
+      { label: "बालों के लिए microfiber तौलिया", query: "microfiber hair towel" },
+      { label: "सिल्क तकिया कवर", query: "silk pillowcase" },
+    ],
     titleHi: 'गर्मी में बालों की देखभाल: पसीना, धूप और पूल का पानी',
     titleEn: 'Hair Care in Summer: Sweat, Sun and Pool Water',
     metaDescHi: 'गर्मियों में सिर में खुजली, चिपचिपापन और रूखे बाल आम हैं। पसीना, तेज़ धूप और क्लोरीन वाले पानी से बाल कैसे बचाएं।',
@@ -621,6 +693,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'vitamin-d-ki-kami',
     cluster: 'deficiency',
+    products: [
+      { label: "सुबह की सैर के लिए walking shoes", query: "walking shoes for men women" },
+      { label: "धूप में पहनने की टोपी", query: "sun protection cap" },
+    ],
     titleHi: 'विटामिन D की कमी: धूप वाले देश में सबसे छुपी कमी',
     titleEn: 'Vitamin D Deficiency: The Hidden Shortage in a Sunny Country',
     metaDescHi: 'भारत में विटामिन D की कमी इतनी आम क्यों है, लक्षण क्या हैं, 25-OH-D जाँच कब कराएं और सप्लीमेंट कब ज़रूरी होता है।',
@@ -658,6 +734,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'vitamin-b12-ki-kami',
     cluster: 'deficiency',
+    products: [
+      { label: "हेल्दी खाना पकाने की किताब (हिंदी)", query: "healthy cooking book hindi" },
+      { label: "स्टील टिफिन बॉक्स", query: "steel tiffin box" },
+    ],
     titleHi: 'विटामिन B12 की कमी: शाकाहारियों में छुपी थकान की वजह',
     titleEn: 'Vitamin B12 Deficiency: The Hidden Cause of Tiredness in Vegetarians',
     metaDescHi: 'हाथ-पैरों में झुनझुनी, भूलना और थकान — B12 की कमी के संकेत, यह शाकाहारियों में क्यों आम है और जाँच कौन सी होती है।',
@@ -695,6 +775,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'iron-ki-kami-anemia',
     cluster: 'deficiency',
+    products: [
+      { label: "लोहे की कड़ाई (cast iron kadai)", query: "cast iron kadai" },
+      { label: "हेल्दी खाना पकाने की किताब (हिंदी)", query: "healthy cooking book hindi" },
+    ],
     titleHi: 'आयरन की कमी और खून की कमी (Anemia): महिलाओं के लिए खास',
     titleEn: 'Iron Deficiency and Anemia: Especially for Women',
     metaDescHi: 'भारत की आधी से ज़्यादा महिलाओं में खून की कमी है। लक्षण, Hb और ferritin जाँच, खाने से आयरन और चाय का सही फासला जानिए।',
@@ -732,6 +816,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'calcium-ki-kami',
     cluster: 'deficiency',
+    products: [
+      { label: "सुबह की सैर के लिए walking shoes", query: "walking shoes for men women" },
+      { label: "हेल्दी खाना पकाने की किताब (हिंदी)", query: "healthy cooking book hindi" },
+    ],
     titleHi: 'कैल्शियम की कमी: हड्डियों की खामोश कमज़ोरी',
     titleEn: 'Calcium Deficiency: The Silent Weakening of Bones',
     metaDescHi: 'कैल्शियम सिर्फ़ दूध से नहीं मिलता — रागी, तिल, दही भी मज़बूत स्रोत हैं। कमी के संकेत और हड्डियों की सेहत का सीधा हिसाब।',
@@ -769,6 +857,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'protein-ki-kami',
     cluster: 'deficiency',
+    products: [
+      { label: "किचन तौलने की मशीन (weighing scale)", query: "digital kitchen weighing scale" },
+      { label: "स्टील टिफिन बॉक्स", query: "steel tiffin box" },
+    ],
     titleHi: 'प्रोटीन की कमी: भारतीय थाली की अनदेखी सच्चाई',
     titleEn: 'Protein Deficiency: The Overlooked Truth of the Indian Plate',
     metaDescHi: 'भारतीय थाली कार्बोहाइड्रेट से भरी पर प्रोटीन में हल्की होती है। प्रोटीन कितना चाहिए, कमी के संकेत और सस्ते भारतीय स्रोत।',
@@ -806,6 +898,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'magnesium-zinc',
     cluster: 'deficiency',
+    products: [
+      { label: "लोहे की कड़ाई (cast iron kadai)", query: "cast iron kadai" },
+      { label: "मेवे और बीज रखने के स्टील डिब्बे", query: "steel storage container set" },
+    ],
     titleHi: 'मैग्नीशियम और ज़िंक: छोटी कमियाँ, सीधी बात',
     titleEn: 'Magnesium and Zinc: Small Deficiencies, Straight Talk',
     metaDescHi: 'मैग्नीशियम और ज़िंक की कमी पर ईमानदार जानकारी — जाँच क्यों कठिन है, लक्षण कितने भरोसेमंद हैं, और खाना पहले क्यों।',
@@ -843,6 +939,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'thakan-kyon-rehti-hai',
     cluster: 'deficiency',
+    products: [
+      { label: "अच्छी नींद के लिए eye mask", query: "eye mask for sleep" },
+      { label: "आरामदायक तकिया", query: "comfortable pillow for sleeping" },
+    ],
     titleHi: 'हर वक़्त थकान क्यों रहती है: जड़ तक का नक्शा',
     titleEn: 'Why You Feel Tired All the Time: A Root-Cause Map',
     metaDescHi: 'सोने के बाद भी थकान? वजह नींद, थायरॉयड, खून की कमी, विटामिन D-B12 या शुगर हो सकती है। कौन सी जाँच कब, समझिए।',
@@ -880,6 +980,10 @@ export const SX_ARTICLES: SxArticle[] = [
   {
     slug: 'khoon-ki-jaanch-guide',
     cluster: 'deficiency',
+    products: [
+      { label: "घर के लिए BP monitor मशीन", query: "bp monitor machine for home" },
+      { label: "डिजिटल थर्मामीटर", query: "digital thermometer" },
+    ],
     titleHi: 'खून की जाँच गाइड: कौन सी जाँच कब और रिपोर्ट कैसे समझें',
     titleEn: 'Blood Test Guide: Which Test When and How to Read Reports',
     metaDescHi: 'CBC, ferritin, विटामिन D, B12, TSH, HbA1c — ये जाँचें क्या बताती हैं, कब करानी चाहिए और रिपोर्ट के नंबरों को कैसे देखें।',

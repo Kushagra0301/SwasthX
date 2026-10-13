@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Home, ToolsHub, ToolPage, ClusterHub, ArticlePage, LegalPage } from './pages'
+import { DISCLOSURE } from './affiliate-config'
 import { SX_TOOLS } from './content-tools'
 import { SX_ARTICLES } from './content-articles'
 
@@ -68,6 +69,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
       <p className="disclaimer">{hi
         ? 'SwasthX पर दी गई जानकारी शैक्षणिक है — यह किसी बीमारी का निदान या इलाज नहीं है। कोई भी तकलीफ़ हो, या लेख में बताए गए ख़तरे के लक्षण दिखें, तो डॉक्टर से मिलें।'
         : 'Information on SwasthX is educational — it is not a diagnosis or treatment for any condition. If you are unwell, or notice any red-flag symptom described in an article, please see a doctor.'}</p>
+      <p className="muted">{DISCLOSURE}</p>
       <p className="muted">© 2026 SwasthX • <a href="/about">{hi ? 'बारे में' : 'About'}</a> • <a href="/privacy-policy">Privacy</a> • <a href="/disclaimer">{hi ? 'अस्वीकरण' : 'Disclaimer'}</a></p>
     </footer>
   )
