@@ -3,16 +3,23 @@
    Dark = warm charcoal-brown night. (Owner rejected the old deep-green
    theme on 2026-10-13.) */
 :root {
-  --terra: #c05621;
-  --terra-deep: #9c4218;
-  --marigold: #b45309;
+  /* Contrast-hardened 2026-10-14 (WCAG AA audit): terra deepened #c05621→#a84b1d
+     (4.24→5.28 on paper), marigold #b45309→#9a4707 (4.66→5.94), muted
+     #78716c→#6e6459 (4.45→5.37). Same Warm Editorial family, deeper shades. */
+  --terra: #a84b1d;
+  --terra-deep: #8f3c14;
+  --marigold: #9a4707;
   --paper: #faf6ee;
   --paper-2: #fcfbf7;
   --ink: #1c1917;
   --ink-2: #44403c;
-  --muted: #78716c;
+  --muted: #6e6459;
   --line: #e5dfd2;
+  /* Visible boundary for interactive chips (toggles/menu): ≥3:1 vs paper/white.
+     The hairline --line is decorative only (1.23:1) and must not outline controls. */
+  --control-border: #8d7c62;
   --rule-strong: #1c1917;
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
   --red: #b91c1c;
   --red-bg: #fdeaea;
 
@@ -51,6 +58,10 @@
   --ink-2: #d8cfc2;
   --muted: #a39887;
   --line: #3e362c;
+  --control-border: #97835f;
+  /* #b91c1c on the dark red surfaces was 2.50:1 — red-flag text was nearly
+     invisible in dark mode. Lightened red for dark surfaces only. */
+  --red: #f87171;
   --rule-strong: #4a4036;
 
   --color-primary: var(--terra);

@@ -31,7 +31,7 @@ function initialTheme(): 'light' | 'dark' {
 export function Logo({ lang }: { lang: Lang }) {
   return (
     <a className="logo" href="/">
-      <span className="logo-leaf" aria-hidden="true"><svg viewBox="0 0 64 64" width="30" height="30" role="img"><path d="M32 54 C12 42 15 18 32 9 C49 18 52 42 32 54 Z" fill="#c05621"/><path d="M32 49 L32 16" stroke="#b45309" strokeWidth="3.5" strokeLinecap="round"/></svg></span>
+      <span className="logo-leaf" aria-hidden="true"><svg viewBox="0 0 64 64" width="30" height="30" role="img"><path d="M32 54 C12 42 15 18 32 9 C49 18 52 42 32 54 Z" fill="#a84b1d"/><path d="M32 49 L32 16" stroke="#9a4707" strokeWidth="3.5" strokeLinecap="round"/></svg></span>
       <span>
         <span className="logo-name">SwasthX</span>
         <span className="logo-tag" style={{ display: 'block' }}>{lang === 'hi' ? 'बीमारी की जड़ तक' : 'To the root of it'}</span>
@@ -42,23 +42,46 @@ export function Logo({ lang }: { lang: Lang }) {
 
 export function SiteHeader({ lang, pick, theme, toggleTheme }: { lang: Lang; pick: (l: Lang) => void; theme?: 'light' | 'dark'; toggleTheme?: () => void }) {
   const hi = lang === 'hi'
+  const [menuOpen, setMenuOpen] = useState(false)
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false) }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [menuOpen])
+  const close = () => setMenuOpen(false)
   return (
     <header className="site-header">
       <Logo lang={lang} />
-      <nav className="nav">
-        <a href="/gut">{hi ? 'पेट' : 'Gut'}</a>
-        <a href="/hair">{hi ? 'बाल' : 'Hair'}</a>
-        <a href="/deficiency">{hi ? 'कमियाँ' : 'Deficiencies'}</a>
-        <a href="/tools">Tools</a>
-        <a href="/stories">{hi ? 'स्टोरीज़' : 'Stories'}</a>
+      <nav id="primary-nav" className={menuOpen ? 'nav open' : 'nav'} aria-label="Primary">
+        <a href="/gut" onClick={close}>{hi ? 'पेट' : 'Gut'}</a>
+        <a href="/hair" onClick={close}>{hi ? 'बाल' : 'Hair'}</a>
+        <a href="/deficiency" onClick={close}>{hi ? 'कमियाँ' : 'Deficiencies'}</a>
+        <a href="/tools" onClick={close}>Tools</a>
+        <a href="/stories" onClick={close}>{hi ? 'स्टोरीज़' : 'Stories'}</a>
       </nav>
-      <div className="lang-toggle" role="group" aria-label="Language">
-        <button className={hi ? 'on' : ''} onClick={() => pick('hi')}>हिं</button>
-        <button className={!hi ? 'on' : ''} onClick={() => pick('en')}>EN</button>
+      <div className="header-controls">
+        <div className="lang-toggle" role="group" aria-label="Language">
+          <button className={hi ? 'on' : ''} onClick={() => pick('hi')} aria-pressed={hi}>हिं</button>
+          <button className={!hi ? 'on' : ''} onClick={() => pick('en')} aria-pressed={!hi}>EN</button>
+        </div>
+        {toggleTheme && (
+          <button className="theme-toggle" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Light theme' : 'Dark theme'}>{theme === 'dark' ? '☀️' : '🌙'}</button>
+        )}
+        <button
+          className="menu-btn"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-expanded={menuOpen}
+          aria-controls="primary-nav"
+          aria-label={menuOpen ? (hi ? 'मेनू बंद करें' : 'Close menu') : (hi ? 'मेनू खोलें' : 'Open menu')}
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+            {menuOpen
+              ? <path d="M5 5 L19 19 M19 5 L5 19" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+              : <path d="M4 7 H20 M4 12 H20 M4 17 H20" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" fill="none" />}
+          </svg>
+        </button>
       </div>
-      {toggleTheme && (
-        <button className="theme-toggle" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Light theme' : 'Dark theme'}>{theme === 'dark' ? '☀️' : '🌙'}</button>
-      )}
     </header>
   )
 }
