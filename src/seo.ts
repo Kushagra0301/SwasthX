@@ -8,7 +8,7 @@ export interface RouteDef {
   path: string
   title: string
   description: string
-  type: 'home' | 'tool' | 'article' | 'tools-hub' | 'cluster' | 'legal'
+  type: 'home' | 'tool' | 'article' | 'tools-hub' | 'cluster' | 'legal' | 'stories'
   slug?: string
   cluster?: string
 }
@@ -51,6 +51,11 @@ export const ROUTES: RouteDef[] = [
     title: `${a.titleHi} | SwasthX`,
     description: a.metaDescHi,
   })),
+  {
+    path: '/stories', type: 'stories',
+    title: 'वेब स्टोरीज़ — पेट, बाल और कमियों की विज़ुअल जानकारी | SwasthX',
+    description: 'SwasthX वेब स्टोरीज़: पेट की सेहत, बालों की देखभाल और Vitamin D, B12, आयरन की कमी — छोटी, पूरी, टैप करके पढ़ी जाने वाली विज़ुअल स्टोरीज़।',
+  },
   {
     path: '/about', type: 'legal', slug: 'about',
     title: 'SwasthX के बारे में',

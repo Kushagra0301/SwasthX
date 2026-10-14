@@ -4,6 +4,7 @@ import { AdSlot } from './AdSlot'
 import { ProductCard } from './ProductCard'
 import { SX_ARTICLES, type SxArticle } from './content-articles'
 import { SX_TIPS } from './content-tips'
+import { STORIES } from './content-stories'
 import { CLUSTER_META } from './seo'
 import { SxToolBody } from './tools'
 
@@ -76,6 +77,21 @@ export function Home({ lang, go }: { lang: Lang; go: (p: string) => void }) {
       <section>
         <h2 className="section-title">{h(lang) ? 'मुफ़्त Tools' : 'Free tools'} <a href="/tools" style={{ fontSize: '0.95rem' }}>{h(lang) ? 'सभी tools →' : 'All tools →'}</a></h2>
         <div className="three-col">{topTools.map(toolCard(lang))}</div>
+      </section>
+
+      <section>
+        <h2 className="section-title">{h(lang) ? 'वेब स्टोरीज़' : 'Web Stories'} <a href="/stories" style={{ fontSize: '0.95rem' }}>{h(lang) ? 'सभी स्टोरीज़ →' : 'All stories →'}</a></h2>
+        <div className="webstories-grid">
+          {STORIES.slice(0, 6).map((s) => (
+            <a key={s.slug} className="ws-card" href={`/stories/${s.slug}/`}>
+              <img src={`/stories/${s.slug}/poster.jpg`} alt={s.title} width={720} height={960} loading="lazy" />
+              <span className="ws-card-body">
+                <span className="ws-card-title">{s.title}</span>
+                <span className="ws-card-meta">{s.pages.length + 2} {h(lang) ? 'पेज' : 'pages'} · {h(lang) ? 'वेब स्टोरी' : 'Web Story'}</span>
+              </span>
+            </a>
+          ))}
+        </div>
       </section>
 
       <div className="trust-strip">

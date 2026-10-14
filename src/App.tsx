@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Home, ToolsHub, ToolPage, ClusterHub, ArticlePage, LegalPage } from './pages'
+import { StoriesIndex } from './pages-stories'
 import { DISCLOSURE } from './affiliate-config'
 import { SX_TOOLS } from './content-tools'
 import { SX_ARTICLES } from './content-articles'
@@ -49,6 +50,7 @@ export function SiteHeader({ lang, pick, theme, toggleTheme }: { lang: Lang; pic
         <a href="/hair">{hi ? 'बाल' : 'Hair'}</a>
         <a href="/deficiency">{hi ? 'कमियाँ' : 'Deficiencies'}</a>
         <a href="/tools">Tools</a>
+        <a href="/stories">{hi ? 'स्टोरीज़' : 'Stories'}</a>
       </nav>
       <div className="lang-toggle" role="group" aria-label="Language">
         <button className={hi ? 'on' : ''} onClick={() => pick('hi')}>हिं</button>
@@ -78,6 +80,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
 export function pageFor(path: string, lang: Lang, go: (p: string) => void): React.ReactNode {
   const p = path.replace(/\/$/, '') || '/'
   if (p === '/') return <Home lang={lang} go={go} />
+  if (p === '/stories') return <StoriesIndex lang={lang} />
   if (p === '/tools') return <ToolsHub lang={lang} />
   let m = p.match(/^\/tools\/([a-z0-9-]+)$/)
   if (m && SX_TOOLS.some((t) => t.slug === m![1])) return <ToolPage lang={lang} slug={m[1]} />
