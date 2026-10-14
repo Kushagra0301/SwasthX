@@ -100,6 +100,26 @@ export function SiteFooter({ lang }: { lang: Lang }) {
   )
 }
 
+function NotFound({ lang }: { lang: Lang }) {
+  const hi = lang === 'hi'
+  return (
+    <main className="wrap">
+      <section className="card" style={{ textAlign: 'center' }}>
+        <p className="muted" style={{ fontWeight: 700, letterSpacing: '0.12em' }}>404</p>
+        <h1>{hi ? 'यह पेज नहीं मिला' : 'Page not found'}</h1>
+        <p className="note">{hi
+          ? 'हो सकता है लिंक बदल गया हो या पता गलत लिखा गया हो। नीचे से सही जगह चुनें:'
+          : 'The link may have changed, or the address may have been typed wrong. Pick a section below:'}</p>
+        <p>
+          <a className="btn btn-primary" href="/">{hi ? 'होम पर जाएं' : 'Go home'}</a>{' '}
+          <a className="btn btn-ghost" href="/tools">{hi ? 'Tools देखें' : 'Browse tools'}</a>{' '}
+          <a className="btn btn-ghost" href="/stories">{hi ? 'स्टोरीज़ पढ़ें' : 'Read stories'}</a>
+        </p>
+      </section>
+    </main>
+  )
+}
+
 export function pageFor(path: string, lang: Lang, go: (p: string) => void): React.ReactNode {
   const p = path.replace(/\/$/, '') || '/'
   if (p === '/') return <Home lang={lang} go={go} />
@@ -115,7 +135,7 @@ export function pageFor(path: string, lang: Lang, go: (p: string) => void): Reac
     if (a) return <ArticlePage lang={lang} article={a} />
   }
   if (p === '/about' || p === '/privacy-policy' || p === '/disclaimer') return <LegalPage lang={lang} slug={p.slice(1)} />
-  return <Home lang={lang} go={go} />
+  return <NotFound lang={lang} />
 }
 
 function usePathRoute() {

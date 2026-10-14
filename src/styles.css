@@ -140,6 +140,7 @@ img { height: auto; }
 .result-item small { display: block; color: var(--color-text-2); }
 .note { color: var(--color-text-2); font-size: 0.92rem; }
 .note.warn { color: var(--red); font-weight: 600; }
+.note.error { background: var(--red-bg); border: 1px solid color-mix(in srgb, var(--red) 45%, transparent); border-radius: var(--radius); color: var(--red); font-weight: 600; padding: 0.6rem 0.8rem; }
 .steps-list { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.5rem; }
 .check-row { display: flex; gap: 0.6rem; align-items: center; min-height: 44px; padding: 0.55rem 0; border-top: 1px solid var(--color-border); font-weight: 500; }
 .check-row input { width: 24px; height: 24px; margin: 0; accent-color: var(--color-primary); flex: none; }

@@ -33,6 +33,7 @@ function NumField(props: {
   min?: number
   max?: number
   step?: number
+  placeholder?: string
 }) {
   return (
     <label className="field">
@@ -43,6 +44,8 @@ function NumField(props: {
         min={props.min}
         max={props.max}
         step={props.step}
+        placeholder={props.placeholder}
+        inputMode="decimal"
         onChange={(e) => props.onChange(e.target.value)}
       />
     </label>
@@ -91,10 +94,10 @@ function BodyFields({ lang, b, showAge }: { lang: Lang; b: ReturnType<typeof use
     <>
       <SexField lang={lang} sex={b.sex} setSex={b.setSex} />
       {showAge ? (
-        <NumField label={T(lang, 'उम्र (साल)', 'Age (years)')} value={b.age} onChange={b.setAge} min={5} max={100} />
+        <NumField label={T(lang, 'उम्र (साल)', 'Age (years)')} value={b.age} onChange={b.setAge} min={5} max={100} placeholder={T(lang, 'जैसे 30', 'e.g. 30')} />
       ) : null}
-      <NumField label={T(lang, 'वज़न (किलो)', 'Weight (kg)')} value={b.weight} onChange={b.setWeight} min={20} max={300} step={0.5} />
-      <NumField label={T(lang, 'कद (सेमी)', 'Height (cm)')} value={b.height} onChange={b.setHeight} min={100} max={250} />
+      <NumField label={T(lang, 'वज़न (किलो)', 'Weight (kg)')} value={b.weight} onChange={b.setWeight} min={20} max={300} step={0.5} placeholder={T(lang, 'जैसे 65', 'e.g. 65')} />
+      <NumField label={T(lang, 'कद (सेमी)', 'Height (cm)')} value={b.height} onChange={b.setHeight} min={100} max={250} placeholder={T(lang, 'जैसे 170', 'e.g. 170')} />
     </>
   )
 }
@@ -144,7 +147,7 @@ function BmiTool({ lang }: { lang: Lang }) {
           <Disclaimer lang={lang} />
         </div>
       ) : (
-        <p className="note">{T(lang, 'सही वज़न और कद भरें।', 'Please enter a valid weight and height.')}</p>
+        <p className="note error">{T(lang, 'सही वज़न और कद भरें।', 'Please enter a valid weight and height.')}</p>
       )}
     </>
   )
@@ -177,7 +180,7 @@ function BmrTool({ lang }: { lang: Lang }) {
           <Disclaimer lang={lang} />
         </div>
       ) : (
-        <p className="note">{T(lang, 'सही उम्र, वज़न और कद भरें।', 'Please enter a valid age, weight and height.')}</p>
+        <p className="note error">{T(lang, 'सही उम्र, वज़न और कद भरें।', 'Please enter a valid age, weight and height.')}</p>
       )}
     </>
   )
@@ -230,7 +233,7 @@ function TdeeTool({ lang }: { lang: Lang }) {
           <Disclaimer lang={lang} />
         </div>
       ) : (
-        <p className="note">{T(lang, 'सही उम्र, वज़न और कद भरें।', 'Please enter a valid age, weight and height.')}</p>
+        <p className="note error">{T(lang, 'सही उम्र, वज़न और कद भरें।', 'Please enter a valid age, weight and height.')}</p>
       )}
     </>
   )
@@ -255,7 +258,7 @@ function ProteinTool({ lang }: { lang: Lang }) {
   return (
     <>
       <div className="tool-form">
-        <NumField label={T(lang, 'वज़न (किलो)', 'Weight (kg)')} value={weight} onChange={setWeight} min={20} max={300} step={0.5} />
+        <NumField label={T(lang, 'वज़न (किलो)', 'Weight (kg)')} value={weight} onChange={setWeight} min={20} max={300} step={0.5} placeholder={T(lang, 'जैसे 65', 'e.g. 65')} />
         <label className="field">
           <span>{T(lang, 'आपका लक्ष्य', 'Your goal')}</span>
           <select value={goal} onChange={(e) => setGoal(Number(e.target.value))}>
@@ -293,7 +296,7 @@ function ProteinTool({ lang }: { lang: Lang }) {
           <Disclaimer lang={lang} />
         </div>
       ) : (
-        <p className="note">{T(lang, 'सही वज़न भरें।', 'Please enter a valid weight.')}</p>
+        <p className="note error">{T(lang, 'सही वज़न भरें।', 'Please enter a valid weight.')}</p>
       )}
     </>
   )
@@ -309,7 +312,7 @@ function WaterTool({ lang }: { lang: Lang }) {
   return (
     <>
       <div className="tool-form">
-        <NumField label={T(lang, 'वज़न (किलो)', 'Weight (kg)')} value={weight} onChange={setWeight} min={20} max={300} step={0.5} />
+        <NumField label={T(lang, 'वज़न (किलो)', 'Weight (kg)')} value={weight} onChange={setWeight} min={20} max={300} step={0.5} placeholder={T(lang, 'जैसे 65', 'e.g. 65')} />
       </div>
       {ok ? (
         <div className="result-card">
@@ -336,7 +339,7 @@ function WaterTool({ lang }: { lang: Lang }) {
           <Disclaimer lang={lang} />
         </div>
       ) : (
-        <p className="note">{T(lang, 'सही वज़न भरें।', 'Please enter a valid weight.')}</p>
+        <p className="note error">{T(lang, 'सही वज़न भरें।', 'Please enter a valid weight.')}</p>
       )}
     </>
   )
@@ -354,7 +357,7 @@ function IdealWeightTool({ lang }: { lang: Lang }) {
     <>
       <div className="tool-form">
         <SexField lang={lang} sex={b.sex} setSex={b.setSex} />
-        <NumField label={T(lang, 'कद (सेमी)', 'Height (cm)')} value={b.height} onChange={b.setHeight} min={100} max={250} />
+        <NumField label={T(lang, 'कद (सेमी)', 'Height (cm)')} value={b.height} onChange={b.setHeight} min={100} max={250} placeholder={T(lang, 'जैसे 170', 'e.g. 170')} />
       </div>
       {ok ? (
         <div className="result-card">
@@ -374,7 +377,7 @@ function IdealWeightTool({ lang }: { lang: Lang }) {
           <Disclaimer lang={lang} />
         </div>
       ) : (
-        <p className="note">{T(lang, 'सही कद भरें।', 'Please enter a valid height.')}</p>
+        <p className="note error">{T(lang, 'सही कद भरें।', 'Please enter a valid height.')}</p>
       )}
     </>
   )
@@ -477,7 +480,7 @@ function FoodCaloriesTool({ lang }: { lang: Lang }) {
         ))}
       </ul>
       {shown.length === 0 ? (
-        <p className="note">{T(lang, 'इस नाम का खाना सूची में नहीं मिला।', 'No food in the list matches that name.')}</p>
+        <p className="note error">{T(lang, 'इस नाम का खाना सूची में नहीं मिला।', 'No food in the list matches that name.')}</p>
       ) : null}
       {total > 0 ? (
         <div className="result-card">
@@ -546,8 +549,8 @@ function PeriodTool({ lang }: { lang: Lang }) {
           <span>{T(lang, 'पिछली माहवारी का पहला दिन', 'First day of last period')}</span>
           <input type="date" value={lmp} onChange={(e) => setLmp(e.target.value)} />
         </label>
-        <NumField label={T(lang, 'माहवारी का चक्र (दिन)', 'Cycle length (days)')} value={cycle} onChange={setCycle} min={21} max={45} />
-        <NumField label={T(lang, 'माहवारी कितने दिन चलती है', 'How long the period lasts (days)')} value={dur} onChange={setDur} min={2} max={10} />
+        <NumField label={T(lang, 'माहवारी का चक्र (दिन)', 'Cycle length (days)')} value={cycle} onChange={setCycle} min={21} max={45} placeholder={T(lang, 'जैसे 28', 'e.g. 28')} />
+        <NumField label={T(lang, 'माहवारी कितने दिन चलती है', 'How long the period lasts (days)')} value={dur} onChange={setDur} min={2} max={10} placeholder={T(lang, 'जैसे 5', 'e.g. 5')} />
       </div>
       {ok ? (
         <div className="result-card">
@@ -566,7 +569,7 @@ function PeriodTool({ lang }: { lang: Lang }) {
           <Disclaimer lang={lang} />
         </div>
       ) : (
-        <p className="note">{T(lang, 'तारीख़ और चक्र के सही दिन भरें (चक्र 21–45 दिन)।', 'Please enter the date and a cycle between 21–45 days.')}</p>
+        <p className="note error">{T(lang, 'तारीख़ और चक्र के सही दिन भरें (चक्र 21–45 दिन)।', 'Please enter the date and a cycle between 21–45 days.')}</p>
       )}
     </>
   )
@@ -589,7 +592,7 @@ function OvulationTool({ lang }: { lang: Lang }) {
           <span>{T(lang, 'पिछली माहवारी का पहला दिन', 'First day of last period')}</span>
           <input type="date" value={lmp} onChange={(e) => setLmp(e.target.value)} />
         </label>
-        <NumField label={T(lang, 'माहवारी का चक्र (दिन)', 'Cycle length (days)')} value={cycle} onChange={setCycle} min={21} max={45} />
+        <NumField label={T(lang, 'माहवारी का चक्र (दिन)', 'Cycle length (days)')} value={cycle} onChange={setCycle} min={21} max={45} placeholder={T(lang, 'जैसे 28', 'e.g. 28')} />
       </div>
       {ok ? (
         <div className="result-card">
@@ -611,7 +614,7 @@ function OvulationTool({ lang }: { lang: Lang }) {
           <Disclaimer lang={lang} />
         </div>
       ) : (
-        <p className="note">{T(lang, 'तारीख़ और चक्र के सही दिन भरें (चक्र 21–45 दिन)।', 'Please enter the date and a cycle between 21–45 days.')}</p>
+        <p className="note error">{T(lang, 'तारीख़ और चक्र के सही दिन भरें (चक्र 21–45 दिन)।', 'Please enter the date and a cycle between 21–45 days.')}</p>
       )}
     </>
   )
@@ -1101,6 +1104,7 @@ function LabReaderTool({ lang }: { lang: Lang }) {
           onChange={setValue}
           min={0}
           step={0.1}
+          placeholder={T(lang, 'जैसे 28', 'e.g. 28')}
         />
       </div>
       <p className="note">

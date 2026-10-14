@@ -67,6 +67,9 @@ function storyHtml(story: Story): string {
 <meta charset="utf-8">
 <title>${esc(story.title)} — SwasthX वेब स्टोरी</title>
 <link rel="canonical" href="${url}">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
 <meta name="description" content="${esc(story.desc)}">
 <meta name="theme-color" content="#FAF6EE">
