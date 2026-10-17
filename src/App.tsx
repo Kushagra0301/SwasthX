@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Home, ToolsHub, ToolPage, ClusterHub, ArticlePage, LegalPage } from './pages'
-import { StoriesIndex } from './pages-stories'
 import { DISCLOSURE } from './affiliate-config'
 import { SX_TOOLS } from './content-tools'
 import { SX_ARTICLES } from './content-articles'
@@ -58,7 +57,6 @@ export function SiteHeader({ lang, pick, theme, toggleTheme }: { lang: Lang; pic
         <a href="/hair" onClick={close}>{hi ? 'बाल' : 'Hair'}</a>
         <a href="/deficiency" onClick={close}>{hi ? 'कमियाँ' : 'Deficiencies'}</a>
         <a href="/tools" onClick={close}>Tools</a>
-        <a href="/stories" onClick={close}>{hi ? 'स्टोरीज़' : 'Stories'}</a>
       </nav>
       <div className="header-controls">
         <div className="lang-toggle" role="group" aria-label="Language">
@@ -112,8 +110,7 @@ function NotFound({ lang }: { lang: Lang }) {
           : 'The link may have changed, or the address may have been typed wrong. Pick a section below:'}</p>
         <p>
           <a className="btn btn-primary" href="/">{hi ? 'होम पर जाएं' : 'Go home'}</a>{' '}
-          <a className="btn btn-ghost" href="/tools">{hi ? 'Tools देखें' : 'Browse tools'}</a>{' '}
-          <a className="btn btn-ghost" href="/stories">{hi ? 'स्टोरीज़ पढ़ें' : 'Read stories'}</a>
+          <a className="btn btn-ghost" href="/tools">{hi ? 'Tools देखें' : 'Browse tools'}</a>
         </p>
       </section>
     </main>
@@ -123,7 +120,6 @@ function NotFound({ lang }: { lang: Lang }) {
 export function pageFor(path: string, lang: Lang, go: (p: string) => void): React.ReactNode {
   const p = path.replace(/\/$/, '') || '/'
   if (p === '/') return <Home lang={lang} go={go} />
-  if (p === '/stories') return <StoriesIndex lang={lang} />
   if (p === '/tools') return <ToolsHub lang={lang} />
   let m = p.match(/^\/tools\/([a-z0-9-]+)$/)
   if (m && SX_TOOLS.some((t) => t.slug === m![1])) return <ToolPage lang={lang} slug={m[1]} />

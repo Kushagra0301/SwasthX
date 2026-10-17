@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dist = join(root, 'dist')
-const { render, ROUTES: routes, BASE, BRAND, STORY_PATHS, renderStory } = await import(join(root, 'dist-ssr/entry-server.js'))
+const { render, ROUTES: routes, BASE, BRAND } = await import(join(root, 'dist-ssr/entry-server.js'))
 
 const template = readFileSync(join(dist, 'index.html'), 'utf8')
 const today = new Date().toISOString().slice(0, 10)
@@ -35,20 +35,6 @@ for (const r of routes) {
   writeFileSync(out, page)
   urls.push(r.path)
   console.log('prerendered', r.path)
-}
-
-// Web Stories: standalone AMP pages (not React routes). Story art lives in
-// public/stories/<slug>/ (generated once by scripts/gen-story-images.py and
-// committed; Vite copies public/ into dist) — no Python needed at build time.
-for (const p of STORY_PATHS) {
-  const slug = p.replace('/stories/', '')
-  const html = renderStory(slug)
-  if (!html) throw new Error(`story not found: ${slug}`)
-  const out = join(dist, p, 'index.html')
-  mkdirSync(dirname(out), { recursive: true })
-  writeFileSync(out, html)
-  urls.push(`${p}/`)
-  console.log('story', p)
 }
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls

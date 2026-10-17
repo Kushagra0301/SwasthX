@@ -2,8 +2,6 @@ import { renderToString } from 'react-dom/server'
 import { pageFor, SiteHeader, SiteFooter } from './App'
 
 export { ROUTES, BASE, BRAND } from './seo'
-export { STORY_PATHS, STORY_MANIFEST, renderStory } from './stories-html'
-export { STORIES } from './content-stories'
 
 // Build-time prerender entry. Language defaults to Hindi for static HTML;
 // the client popup/toggle handles switching.
