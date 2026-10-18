@@ -66,4 +66,14 @@ export const ROUTES: RouteDef[] = [
     title: 'चिकित्सा अस्वीकरण (Medical Disclaimer) | SwasthX',
     description: 'SwasthX की जानकारी शैक्षणिक है — यह किसी बीमारी का निदान या इलाज नहीं है। तकलीफ़ हो तो डॉक्टर से मिलें।',
   },
+  {
+    path: '/terms', type: 'legal', slug: 'terms',
+    title: 'उपयोग की शर्तें (Terms of Use) | SwasthX',
+    description: 'SwasthX का उपयोग करने की शर्तें — जानकारी केवल शैक्षणिक है, यह चिकित्सा सलाह नहीं है; उचित उपयोग, बौद्धिक संपदा और दायित्व की सीमाएं।',
+  },
+  {
+    path: '/contact', type: 'legal', slug: 'contact',
+    title: 'संपर्क करें (Contact) | SwasthX',
+    description: 'SwasthX से संपर्क की जानकारी — व्यक्तिगत चिकित्सा प्रश्नों के लिए डॉक्टर से मिलें; गलती सुधार, गोपनीयता और विज्ञापन संबंधी जानकारी यहाँ है।',
+  },
 ]

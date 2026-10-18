@@ -93,7 +93,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
         ? 'SwasthX पर दी गई जानकारी शैक्षणिक है — यह किसी बीमारी का निदान या इलाज नहीं है। कोई भी तकलीफ़ हो, या लेख में बताए गए ख़तरे के लक्षण दिखें, तो डॉक्टर से मिलें।'
         : 'Information on SwasthX is educational — it is not a diagnosis or treatment for any condition. If you are unwell, or notice any red-flag symptom described in an article, please see a doctor.'}</p>
       <p className="muted">{DISCLOSURE}</p>
-      <p className="muted">© 2026 SwasthX • <a href="/about">{hi ? 'बारे में' : 'About'}</a> • <a href="/privacy-policy">Privacy</a> • <a href="/disclaimer">{hi ? 'अस्वीकरण' : 'Disclaimer'}</a></p>
+      <p className="muted">© 2026 SwasthX • <a href="/about">{hi ? 'बारे में' : 'About'}</a> • <a href="/privacy-policy">Privacy</a> • <a href="/disclaimer">{hi ? 'अस्वीकरण' : 'Disclaimer'}</a> • <a href="/terms">{hi ? 'उपयोग की शर्तें' : 'Terms'}</a> • <a href="/contact">{hi ? 'संपर्क करें' : 'Contact'}</a></p>
     </footer>
   )
 }
@@ -130,7 +130,7 @@ export function pageFor(path: string, lang: Lang, go: (p: string) => void): Reac
     const a = SX_ARTICLES.find((x) => x.slug === m![2] && x.cluster === m![1])
     if (a) return <ArticlePage lang={lang} article={a} />
   }
-  if (p === '/about' || p === '/privacy-policy' || p === '/disclaimer') return <LegalPage lang={lang} slug={p.slice(1)} />
+  if (p === '/about' || p === '/privacy-policy' || p === '/disclaimer' || p === '/terms' || p === '/contact') return <LegalPage lang={lang} slug={p.slice(1)} />
   return <NotFound lang={lang} />
 }
 

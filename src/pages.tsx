@@ -262,6 +262,60 @@ const LEGAL: Record<string, { hi: { title: string; body: string[] }; en: { title
       ],
     },
   },
+  terms: {
+    hi: {
+      title: 'उपयोग की शर्तें',
+      body: [
+        'स्वीकृति: SwasthX (swasthx.in) का उपयोग करते ही आप इन शर्तों से सहमत होते हैं। सहमत न हों, तो कृपया site का उपयोग न करें।',
+        'SwasthX क्या है: SwasthX एक स्वतंत्र स्वास्थ्य-जानकारी site है। हम पेट की सेहत, बालों की सेहत और आम कमियों पर शैक्षणिक लेख प्रकाशित करते हैं, और ऐसे मुफ़्त tools देते हैं जो पूरी तरह आपके ब्राउज़र में चलते हैं।',
+        'यह चिकित्सा सलाह नहीं है: SwasthX पर कुछ भी चिकित्सा सलाह नहीं है। सारी जानकारी केवल शिक्षा के लिए है — यह किसी बीमारी का निदान, इलाज या नुस्खा नहीं है, और डॉक्टर की जगह नहीं ले सकती। किसी tool का परिणाम "संभावना" मात्र है। हमारा चिकित्सा अस्वीकरण भी पढ़ें, और किसी भी लक्षण या चिंता के लिए डॉक्टर से मिलें।',
+        'जानकारी की सटीकता: हमारे लेख प्रकाशित sources (जैसे WHO, ICMR, NIH) पर आधारित हैं, जो हर लेख के नीचे दिए जाते हैं, और समय-समय पर जांचे व update किए जाते हैं। फिर भी जानकारी पुरानी पड़ सकती है, और हम हर पेज के पूर्ण या त्रुटिरहित होने की गारंटी नहीं देते।',
+        'उचित उपयोग: कृपया site का उपयोग lawful और सही उद्देश्य से करें — site को बिगाड़ने या बाधित करने का प्रयास न करें, service को ख़राब करने वाली scraping न करें, और हमारी सामग्री को किसी और के लिए चिकित्सा नुस्खे के रूप में प्रस्तुत न करें।',
+        'बौद्धिक संपदा: Site की सामग्री, design और tools SwasthX के हैं। आप व्यक्तिगत उपयोग के लिए पढ़ सकते हैं और links share कर सकते हैं; हमारे लेख दोबारा प्रकाशित करने या site का design copy करने के लिए पहले अनुमति आवश्यक है।',
+        'बाहरी links, विज्ञापन और affiliate: लेखों में तीसरे पक्ष के sources के links हैं, और कुछ पेजों पर Amazon.in के affiliate links हैं (विवरण अस्वीकरण में है); उन sites पर हमारा नियंत्रण नहीं है। Site पर Google AdSense के विज्ञापन दिखते हैं — विज्ञापन तीसरे पक्ष देते हैं, वे किसी उत्पाद, विशेषकर किसी health उत्पाद, का हमारा समर्थन नहीं हैं।',
+        'दायित्व की सीमा: कानून द्वारा अनुमत अधिकतम सीमा तक, SwasthX "जैसा है" (as is) आधार पर उपलब्ध है, और इसकी सामग्री या tools पर भरोसा करके हुए किसी नुक़सान के लिए हम ज़िम्मेदार नहीं हैं। सेहत के फ़ैसले किसी योग्य डॉक्टर के साथ लें।',
+        'शर्तों में बदलाव: हम समय-समय पर इन शर्तों को update कर सकते हैं। वर्तमान संस्करण ही लागू होता है, और बदलाव के बाद site का उपयोग जारी रखना आपकी स्वीकृति माना जाएगा।',
+        'संपर्क: इन शर्तों के बारे में प्रश्न हो, तो इस site का संपर्क पेज देखें।',
+      ],
+    },
+    en: {
+      title: 'Terms of Use',
+      body: [
+        'Acceptance: By using SwasthX (swasthx.in) you accept these terms. If you do not agree with them, please do not use the site.',
+        'What SwasthX is: SwasthX is an independent health-information website. We publish educational articles on gut health, hair health and common deficiencies, and provide free tools that run entirely in your browser.',
+        'Not medical advice: Nothing on SwasthX is medical advice. All content is educational only — it is not a diagnosis, treatment or prescription, and it cannot replace a doctor. A tool result is only an indication. Please also read our Medical Disclaimer, and see a doctor for any symptom or concern.',
+        'Accuracy of information: Our articles are based on published sources (such as WHO, ICMR and NIH), which are listed under each article, and are reviewed and updated periodically. Even so, information may become out of date, and we do not guarantee that every page is complete or error-free.',
+        'Acceptable use: Please use the site lawfully and as intended — do not attempt to disrupt it, scrape it in a way that degrades the service, or present its content as a medical prescription for someone else.',
+        'Intellectual property: The site’s content, design and tools belong to SwasthX. You may read the site and share its links for personal use; republishing our articles or copying the site’s design requires prior permission.',
+        'External links, advertising and affiliates: Articles link to third-party sources and, on some pages, to products on Amazon.in through affiliate links (see the Disclaimer for the affiliate disclosure); we do not control those sites. The site displays advertising served by Google AdSense — ads are provided by third parties and are not our endorsement of any product, least of all a health product.',
+        'Limitation of liability: To the fullest extent permitted by law, SwasthX is provided “as is”, and we are not liable for any loss arising from reliance on its content or tools. Health decisions should be made with a qualified doctor.',
+        'Changes to these terms: We may update these terms from time to time. The current version always applies, and continuing to use the site after a change means you accept it.',
+        'Contact: For questions about these terms, please see the Contact page on this site.',
+      ],
+    },
+  },
+  contact: {
+    hi: {
+      title: 'संपर्क करें',
+      body: [
+        'SwasthX एक छोटी, स्वतंत्र स्वास्थ्य-जानकारी site है। हम कोई clinic नहीं चलाते, और हमारी team में कोई ऐसा नहीं है जो किसी व्यक्ति की व्यक्तिगत सेहत का परामर्श दे सके — यह इस site का उद्देश्य भी नहीं है।',
+        'व्यक्तिगत स्वास्थ्य प्रश्न: कृपया यहाँ व्यक्तिगत चिकित्सा उत्तर न खोजें। लक्षण या चिंता हो, तो सही संपर्क आपके नज़दीकी डॉक्टर हैं। आपात स्थिति — तेज़ दर्द, खून आना, सांस की तकलीफ़, बेहोशी — में अस्पताल जाएं या 112 पर call करें।',
+        'गलती सुधार: किसी लेख में गलती दिखी? हर लेख के नीचे उसके sources (WHO, ICMR, NIH जैसी संस्थाओं के प्रकाशन) दिए जाते हैं, ताकि आप किसी भी दावे को मूल source से जांच सकें। हम अपने पेजों को इन्हीं sources से दोबारा जांचते हैं और गलती मिलते ही उसी पेज पर सुधार करते हैं।',
+        'गोपनीयता और विज्ञापन: हमारे tools आपके ब्राउज़र में चलते हैं और आपकी health जानकारी हम तक पहुँचती ही नहीं — Privacy Policy में यह विस्तार से है। विज्ञापन Google AdSense देता है, और ad personalisation को आप Google की ad settings से नियंत्रित कर सकते हैं।',
+        'फ़िलहाल SwasthX कोई सार्वजनिक email inbox या message form नहीं चलाता, और इस site के ज़रिए हम संदेश एकत्र नहीं करते। कोई संपर्क माध्यम खुलेगा, तो वह इसी पेज पर घोषित होगा।',
+      ],
+    },
+    en: {
+      title: 'Contact Us',
+      body: [
+        'SwasthX is a small, independent health-information website. We are not a clinic, and nobody on the team can consult on a specific person’s health — that is not what this site is for.',
+        'Personal health questions: please do not look for personal medical answers here. If you have symptoms or a worry, the right contact is a doctor near you. In an emergency — severe pain, bleeding, breathing difficulty, fainting — go to a hospital or call 112.',
+        'Corrections: spotted a mistake in an article? Every article lists its sources (publications from bodies like WHO, ICMR and NIH) at the bottom, so you can check any claim against the original. We re-check our pages against these sources and correct errors in place when we find them.',
+        'Privacy and advertising: our tools run in your browser and your health inputs never reach us — the Privacy Policy explains this in full. Advertising is served by Google AdSense, and you can control ad personalisation in Google’s ad settings.',
+        'At present SwasthX does not run a public email inbox or a message form, and we do not collect messages through this site. If a contact channel opens, it will be announced on this page.',
+      ],
+    },
+  },
 }
 
 export function LegalPage({ lang, slug }: { lang: Lang; slug: string }) {
