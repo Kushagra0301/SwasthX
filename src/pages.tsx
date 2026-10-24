@@ -182,6 +182,12 @@ export function ArticlePage({ lang, article }: { lang: Lang; article: SxArticle 
           {i === 1 && <AdSlot kind="inArticle" />}
         </section>
       ))}
+      {article.links && article.links.length > 0 && (
+        <section>
+          <h2 className="section-title">{h(lang) ? 'इससे जुड़े लेख' : 'Related articles'}</h2>
+          <div className="stack">{article.links.map((s) => SX_ARTICLES.find((a) => a.slug === s)!).filter(Boolean).map(storyCard(lang))}</div>
+        </section>
+      )}
       <div className="redflag-box">
         <h2>{h(lang) ? 'डॉक्टर को कब दिखाएं' : 'When to see a doctor'}</h2>
         <ul className="steps-list">
